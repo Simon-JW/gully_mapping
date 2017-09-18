@@ -14,8 +14,8 @@ import time
 t0 = time.time()
 #Data
 
-clip_shape = "D:\PhD\junk\\don_50_s.shp"
-out_folder = r"D:\PhD\junk"
+clip_shape = "C:\PhD\junk\mary_shape.shp"
+out_folder = r"C:\PhD\junk"
 band_1 = 'B4'
 band_2 = 'B5'
 band_3 = 'B6'
@@ -23,7 +23,7 @@ rgb_inputs = os.path.join(out_folder, clip_shape[-10:-4] + '_' + band_1 + '.tif'
 rgb_out = clip_shape[-10:-4] + '_' + str(band_1[-1:]) + str(band_2[-1:]) + str(band_3[-1:]) + '.tif'
 rgb_file = os.path.join(out_folder, rgb_out)
 Use_Input_Features_for_Clipping_Geometry = "true"
-root = r"D:\PhD\Landsat\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_093_074_20130526\scene01"
+root = r"C:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
 os.chdir(root)
 
 for (dirpath, dirnames, filenames) in os.walk('.'):

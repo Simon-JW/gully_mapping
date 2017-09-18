@@ -19,11 +19,11 @@ import sys
 
 arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
-root_dir = (r'D:\\PhD\\junk')#Set the working directory.
+root_dir = (r'C:\\PhD\\junk')#Set the working directory.
 
 os.chdir(root_dir)
 
-in_rast = "D:\\PhD\\junk\\mary463" # provide a default value if unspecified
+in_rast = "C:\\PhD\\junk\\mary463" # provide a default value if unspecified
 
 # Local variables:
 shape = 'Rectangle ' #Name desired shape exactly with one space before closing quotes.
@@ -34,7 +34,7 @@ stdev_threshold = -0.5
 standard_deviation = "STD"
 Ignore_NoData_in_calculations = "true" #or change to 'false'
 iteration_factor = 5 #This is the value to adjust the wondow size for each iteration.
-range_len = 4 #This is the numer of times you want the loop to iterate through different window sizes. Because Python indexes from 0, the number of files you create will always be 1 less than this value.
+range_len = 3 #This is the numer of times you want the loop to iterate through different window sizes. Because Python indexes from 0, the number of files you create will always be 1 less than this value.
 
 for i in range(1,range_len):
     in_height = i * iteration_factor #Specify window height.
