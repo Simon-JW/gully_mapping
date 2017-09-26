@@ -20,12 +20,12 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directory.
-root_dir = (r'X:\\PhD\\junk')#Set the working directory.
+root_dir = (r'C:\\PhD\\junk')#Set the working directory.
 os.chdir(root_dir)
 
 ################################################################################
 # Local variables:
-in_rast = "X:\\PhD\\junk\\mary544" # provide a default value if unspecified
+in_rast = "C:\\PhD\\junk\\mary462" # provide a default value if unspecified
 shape = 'Rectangle ' #Name desired shape exactly with one space before closing quotes.
 units = 'CELL' # or 'MAP', no space after
 mean = "MEAN" #Can be any of the acceptable operations depending on data type (float or int)

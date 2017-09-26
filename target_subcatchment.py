@@ -16,13 +16,14 @@ t0 = time.time()
 
 ################################################################################
 #Set sub-catchments file and corresponding DEM.
-input_catchments = "X:\PhD\junk\Mary_subcatchments_mgaz56.shp"
-target_basin = "SC #544" #Needs to be full basin code e.g. 'SC #420' as a string.
+input_catchments = "C:\PhD\junk\Mary_subcatchments_mgaz56.shp"
+target_basin = "SC #462" #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas" #Short for basin.
-DEM = r"X:\PhD\junk\\mary_5m"
+DEM = r"C:\PhD\junk\\mary_5m"
 Use_Input_Features_for_Clipping_Geometry = "true"
-root = r"X:\PhD\junk"; os.chdir(root)
-out = r"X:\PhD\junk"
+landsat_files = r"C:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
+root = r"C:\PhD\junk"; os.chdir(root)
+out = r"C:\PhD\junk"
 
 ################################################################################
 # Process: Make Feature Layer
@@ -59,7 +60,7 @@ band_3 = 'B6'
 rgb_inputs = os.path.join(out, DEM[-7:-4] + '_' + band_1 + '.tif') +';' + os.path.join(out, DEM[-7:-4] + '_' + band_2 + '.tif') + ';' + os.path.join(out, DEM[-7:-4] + '_' + band_3 + '.tif')
 rgb_out = DEM[-7:-4] + '_' + str(band_1[-1:]) + str(band_2[-1:]) + str(band_3[-1:]) + '.tif'
 rgb_file = os.path.join(out, rgb_out)
-landsat_files = r"X:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
+#landsat_files = r"C:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
 os.chdir(landsat_files)
 ################################################################################
 
