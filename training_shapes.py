@@ -22,7 +22,7 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 # Local variables:
 in_raster = "C:\\PhD\\junk\\order_1_2"
 diss_shp = "C:\\PhD\\junk\\Rad.shp"
-init_shp = "C:\\PhD\\junk\\RasterT_order_11.shp" # provide a default value if unspecified
+init_shp = "C:\\PhD\\junk\\init.shp" # provide a default value if unspecified
 
 # Process: Raster to Polygon
 arcpy.RasterToPolygon_conversion(in_raster, init_shp, "SIMPLIFY", "VALUE")
