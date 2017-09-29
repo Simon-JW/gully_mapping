@@ -19,7 +19,7 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Basic inputs and outputs.
-DEM = "C:\\PhD\\junk\\mary462" #Input DEM.
+DEM = "C:\\PhD\\junk\\mary463" #Input DEM.
 
 ################################################################################
 #Outputs.
