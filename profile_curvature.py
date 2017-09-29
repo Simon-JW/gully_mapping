@@ -18,63 +18,51 @@ import sys
 arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
+#Basic inputs and outputs.
+DEM = "C:\\PhD\\junk\\mary462" #Input DEM.
 
-curve = "C:\\PhD\\junk\\curve"
+################################################################################
+#Outputs.
+curve = "C:\\PhD\\junk\\curve" #Output curvature raster.
+pro_curve = "C:\\PhD\\junk\\pro_curve"#Output profile curvature raster.
+pprocurve = "C:\\PhD\\junk\\pprocurve"#p==positive and corresponds to max, above.
+nprocurve = "C:\\PhD\\junk\\nprocurve"#n==negative and corresponds to min, above.
+p_plus_n = "C:\\PhD\\junk\\p_plus_n"#Combining max and min filtered rasters.
+filtprocurve = "C:\\PhD\\junk\\filtprocurve"
+inverse = "C:\\PhD\\junk\\inverse"
+nullprocurve = "C:\\PhD\\junk\\nullprocurve"
 
-pro_curve = "C:\\PhD\\junk\\pro_curve"
-
-Input_raster_or_constant_value_2 = "-3.0"
-Input_raster_or_constant_value_2__2_ = "3.0"
-
-pprocurve = "C:\\PhD\\junk\\pprocurve"
-
-nprocurve = "C:\\PhD\\junk\\nprocurve"
-
+################################################################################
+#Adjustable parameters.
+minprocurve = "-3.0"#Minimum.
+maxprocurve = "3.0"#Maximum.
 Z_factor = "1"
 
-# Local variables:
-mary462 = "C:\\PhD\\junk\\mary462"
-p_plus_n = "C:\\PhD\\junk\\p_plus_n"
-Delete_succeeded = "true"
-Delete_succeeded__2_ = "true"
-Delete_succeeded__3_ = "true"
-filtprocurve = "C:\\PhD\\junk\\filtprocurve"
-Input_raster_or_constant_value_1 = "1"
-inverse = "C:\\PhD\\junk\\inverse"
-Input_false_raster_or_constant_value = "1"
-nullprocurve = "C:\\PhD\\junk\\nullprocurve"
-Delete_succeeded__4_ = "true"
+################################################################################
+#Fixed values.
+invert = "1"
+nullvalue = "1"
 
-# Process: Curvature
-arcpy.gp.Curvature_sa(mary462, curve, Z_factor, pro_curve, plan_curve)
-
-# Process: Greater Than Equal
-arcpy.gp.GreaterThanEqual_sa(pro_curve, Input_raster_or_constant_value_2__2_, pprocurve)
-
-# Process: Less Than Equal
-arcpy.gp.LessThanEqual_sa(pro_curve, Input_raster_or_constant_value_2, nprocurve)
-
-# Process: Plus
+################################################################################
+#Main program.
+arcpy.gp.Curvature_sa(DEM, curve, Z_factor, pro_curve)
+arcpy.gp.GreaterThanEqual_sa(pro_curve, maxprocurve, pprocurve)
+arcpy.gp.LessThanEqual_sa(pro_curve, minprocurve, nprocurve)
 arcpy.gp.Plus_sa(pprocurve, nprocurve, p_plus_n)
-
-# Process: Delete
-arcpy.Delete_management(pprocurve, "")
-
-# Process: Delete (2)
-arcpy.Delete_management(nprocurve, "")
-
-# Process: Delete (3)
-arcpy.Delete_management(curve, "")
-
-# Process: Times
 arcpy.gp.Times_sa(p_plus_n, pro_curve, filtprocurve)
+arcpy.gp.Minus_sa(invert, p_plus_n, inverse)
+arcpy.gp.SetNull_sa(inverse, nullvalue, nullprocurve, "")
 
-# Process: Minus
-arcpy.gp.Minus_sa(Input_raster_or_constant_value_1, p_plus_n, inverse)
-
-# Process: Set Null
-arcpy.gp.SetNull_sa(inverse, Input_false_raster_or_constant_value, nullprocurve, "")
-
-# Process: Delete (4)
+################################################################################
+#Clean up redundant files.
+arcpy.Delete_management(pprocurve, "")
+arcpy.Delete_management(nprocurve, "")
+arcpy.Delete_management(curve, "")
 arcpy.Delete_management(inverse, "")
+
+################################################################################
+print ""
+print "Time taken:"
+print "hours: %i, minutes: %i, seconds: %i" %(int((time.time()-t0)/3600), int(((time.time()-t0)%3600)/60), int((time.time()-t0)%60))
+
 
