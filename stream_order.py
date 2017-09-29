@@ -27,7 +27,7 @@ os.chdir(root_dir)
 
 # Local variables:
 input_catchments = "C:\PhD\junk\Mary_subcatchments_mgaz56.shp"
-target_basin = "SC #462" #Needs to be full basin code e.g. 'SC #420' as a string.
+target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas"
 Use_Input_Features_for_Clipping_Geometry = "true"
 dem = "C:\\PhD\\junk\\mary_5m"
@@ -92,7 +92,7 @@ for row in cursor:
         print max_value
 ################################################################################
 
-dem = "C:\\PhD\\junk\\mary462"
+dem = "C:\\PhD\\junk\\mary463"
 sinkmax = arcpy.GetRasterProperties_management(sink_depth, "MAXIMUM")
 sinkm = sinkmax.getOutput(0)
 print sinkm

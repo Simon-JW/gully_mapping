@@ -25,7 +25,7 @@ os.chdir(root_dir)
 
 ################################################################################
 # Local variables:
-in_rast = "C:\\PhD\\junk\\mary462" # provide a default value if unspecified
+in_rast = "C:\\PhD\\junk\\mary463" # provide a default value if unspecified
 shape = 'Rectangle ' #Name desired shape exactly with one space before closing quotes.
 units = 'CELL' # or 'MAP', no space after
 mean = "MEAN" #Can be any of the acceptable operations depending on data type (float or int)
@@ -37,7 +37,7 @@ Ignore_NoData_in_calculations = "true" #or change to 'false'
 mean_threshold = -0.1 # Highest elevation anomaly to be preserved.
 stdev_threshold = -0.5 # Highest elevation anomaly to be preserved.
 iteration_factor = 5 #This is the value to adjust the window size for each iteration.
-range_len = 3 #This is the numer of times you want the loop to iterate through
+range_len = 2 #This is the numer of times you want the loop to iterate through
                 #different window sizes. Because Python indexes from 0, the
                 #number of files you create will always be 1 less than this value.
 

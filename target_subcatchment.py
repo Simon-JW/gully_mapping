@@ -17,7 +17,7 @@ t0 = time.time()
 ################################################################################
 #Set sub-catchments file and corresponding DEM.
 input_catchments = "C:\PhD\junk\Mary_subcatchments_mgaz56.shp"
-target_basin = "SC #462" #Needs to be full basin code e.g. 'SC #420' as a string.
+target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas" #Short for basin.
 DEM = r"C:\PhD\junk\\mary_5m"
 Use_Input_Features_for_Clipping_Geometry = "true"
