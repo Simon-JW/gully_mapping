@@ -19,12 +19,15 @@ tic
 
 elevation_max = 100 %This is in meters and will chop off anything above this height.
 
-window_size = 20 %This is the number of pixels along eac haxis of the window.
+window_size = 5 %This is the number of pixels along eac haxis of the window.
 
 %Set the desired function. Min, max, median, std... whatever. Better to
 %just create a bunch of functions and then just apply desired one.
 
-fun_mean = @(x) mean(x(:)); 
+
+
+fun_texture = @(x) graycomatrix(x); 
+fun_mean = @(x) nanmean(x(:)); 
 fun_std = @(x) std(x(:)); 
 fun_min = @(x) min(x(:)); 
 fun_max = @(x) max(x(:)); 
@@ -53,17 +56,17 @@ subset = data;
 
 subset(subset > elevation_max) = NaN;%Removing all higher elevation from the analysis.
 
-I2 = nlfilter(subset,[window_size window_size],fun_mean);%Using a filer of specified window size and applying the function defined at the top.
+I2 = nlfilter(subset,[window_size window_size],fun_texture);%Using a filer of specified window size and applying the function defined at the top.
 
 I3 = nlfilter(subset,[window_size window_size],fun_std);%Using a filer of specified window size and applying the function defined at the top.
 
 toc
 
 figure(1); 
-h = imagesc(data); 
-set(h,'alphadata', ~isnan(data))
+h = imagesc(I2); 
+set(h,'alphadata', ~isnan(I2))
 axis off; axis equal; ylabel(colorbar, 'meters'); 
-title('Fitzroy 5m DEM'); colormap(flipud(Golds))
+title('Fitzroy 5m DEM'); colormap(flipud(jet))
 
 
 standard_anomaly_grid = (subset - I2)./I3;%Combining the two window operations above allows me t ocalculate a standardised anomaly.
