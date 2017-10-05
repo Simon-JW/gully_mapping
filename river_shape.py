@@ -36,6 +36,7 @@ print largest_stream
 #Range starts at 1 less than my target value because this script will look for
 #anything greater than i.
 
+stream_order_list = []
 for i in range(4, largest_stream):
     order_value = i; #This is the stream order >= that we want to call river.
     output = in_raster + str(i + 1) + '_riv'; #Name of output file to be created.
@@ -46,16 +47,19 @@ for i in range(4, largest_stream):
     expand_raster = in_raster + 'exp' + str(i + 1)
     # Expand (in_raster, number_cells, zone_values)
     arcpy.gp.Expand_sa(output, expand_raster,  str(i - 3), "1")
-
-    #Maybe need four different filtered datasets. One for order 5, one for order 6,
-    #one for order 7, and one for order >=7. These would then be expanded by different
-    #amounts (5 == least expansion >=7 == largest expansion) before being dissolved and merged into one.
-
     # Process: Raster to Polygon
     arcpy.RasterToPolygon_conversion(expand_raster, init_shp, "SIMPLIFY", "VALUE")
-
     # Process: Dissolve
     arcpy.Dissolve_management(init_shp, diss_shp, "", "", "MULTI_PART", "DISSOLVE_LINES")
+    stream_order_list.append(diss_shp)
+
+#Need to compile the output shapes of each stream order into a list and then I
+#can iterate through that list to populatet he merge operator below.
+
+################################################################################
+#Merge_management (inputs, output, {field_mappings})
+
+large_streams = arcpy.Merge_management(["majorrds.shp", "Habitat_Analysis.gdb/futrds"], "C:/output/Output.gdb/allroads")
 
 ################################################################################
 #Clean up unwanted files.
