@@ -19,7 +19,7 @@ t0 = time.time()
 input_catchments = "C:\PhD\junk\Mary_subcatchments_mgaz56.shp"
 target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas" #Short for basin.
-DEM = r"C:\PhD\junk\\mary_dem"
+DEM = r"C:\PhD\junk\\qldz56.tif"
 Use_Input_Features_for_Clipping_Geometry = "true"
 landsat_files = r"C:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
 root = r"C:\PhD\junk"; os.chdir(root)
@@ -47,7 +47,7 @@ for row in cursor:
         right = int(dem_raster.extent.XMax)
         top = int(dem_raster.extent.YMax)
         bottom = int(dem_raster.extent.YMin)
-        new = os.path.join(out, DEM[-7:-3] + target_basin[4:])
+        new = os.path.join(out, DEM[-10:-8] + target_basin[4:])
         extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
         arcpy.Clip_management(DEM, extent, new, clip_shape, "-999", Use_Input_Features_for_Clipping_Geometry, "NO_MAINTAIN_EXTENT")
         print new
@@ -57,8 +57,8 @@ for row in cursor:
 band_1 = 'B4'
 band_2 = 'B5'
 band_3 = 'B6'
-rgb_inputs = os.path.join(out, DEM[-7:-4] + '_' + band_1 + '.tif') +';' + os.path.join(out, DEM[-7:-4] + '_' + band_2 + '.tif') + ';' + os.path.join(out, DEM[-7:-4] + '_' + band_3 + '.tif')
-rgb_out = DEM[-7:-4] + '_' + str(band_1[-1:]) + str(band_2[-1:]) + str(band_3[-1:]) + '.tif'
+rgb_inputs = os.path.join(out, DEM[-10:-8] + '_' + band_1 + '.tif') +';' + os.path.join(out, DEM[-10:-8] + '_' + band_2 + '.tif') + ';' + os.path.join(out, DEM[-10:-8] + '_' + band_3 + '.tif')
+rgb_out = DEM[-10:-8] + '_' + str(band_1[-1:]) + str(band_2[-1:]) + str(band_3[-1:]) + '.tif'
 rgb_file = os.path.join(out, rgb_out)
 #landsat_files = r"C:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
 os.chdir(landsat_files)
@@ -72,7 +72,7 @@ for (dirpath, dirnames, filenames) in os.walk('.'):
             right = int(image_raster.extent.XMax)
             top = int(image_raster.extent.YMax)
             bottom = int(image_raster.extent.YMin)
-            new_rgb = os.path.join(out, DEM[-7:-4] + file[-7:])
+            new_rgb = os.path.join(out, DEM[-10:-8] + file[-7:])
             extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
             arcpy.Clip_management(file, extent, new_rgb, clip_shape, "-999", Use_Input_Features_for_Clipping_Geometry, "NO_MAINTAIN_EXTENT")
             print new_rgb
@@ -84,7 +84,7 @@ os.chdir(root)
 #Delete clipped Landsat bands used to create 456 image.
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for file in filenames:
-        if file.startswith(DEM[-7:-4] + '_B'):
+        if file.startswith(DEM[-10:-8] + '_B'):
             print 'this file will be deleted' + '' + file
             arcpy.Delete_management(file)
 
