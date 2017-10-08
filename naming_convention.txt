@@ -9,3 +9,5 @@ exp == Raster file that has be expanded some amount using ArcGIS expand tool.
 strm = A stream that has been delineated using ArcGIS stream order tool.
 
 strms = steams
+
+m = Shapefile created using using ArcGIS merge tool.
