@@ -25,7 +25,7 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 ################################################################################
 # Local variables:
 #Set sub-catchments file and corresponding DEM.
-filename = 'weanord'
+filename = 'filord'
 root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
 out = r"C:\PhD\junk"
 DEM = os.path.join(root_dir, filename)
