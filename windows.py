@@ -25,7 +25,8 @@ os.chdir(root_dir)
 
 ################################################################################
 # Local variables:
-in_rast = "C:\\PhD\\junk\\mary463" # provide a default value if unspecified
+filename = 'wean1mfill'
+in_rast = os.path.join(root_dir, filename) # provide a default value if unspecified
 shape = 'Rectangle ' #Name desired shape exactly with one space before closing quotes.
 units = 'CELL' # or 'MAP', no space after
 mean = "MEAN" #Can be any of the acceptable operations depending on data type (float or int)
@@ -36,8 +37,8 @@ Ignore_NoData_in_calculations = "true" #or change to 'false'
 #Set parameters.
 mean_threshold = -0.1 # Highest elevation anomaly to be preserved.
 stdev_threshold = -0.5 # Highest elevation anomaly to be preserved.
-iteration_factor = 5 #This is the value to adjust the window size for each iteration.
-range_len = 2 #This is the numer of times you want the loop to iterate through
+iteration_factor = 50 #This is the value to adjust the window size for each iteration.
+range_len = 10 #This is the numer of times you want the loop to iterate through
                 #different window sizes. Because Python indexes from 0, the
                 #number of files you create will always be 1 less than this value.
 
@@ -51,10 +52,10 @@ for i in range(1,range_len):
     in_width = i * iteration_factor #Specify window width.
     w = str(in_width)#Convert to string for ArcGIS.
     width = w + ' '
-    env.workspace = root_dir
+    #env.workspace = root_dir
     ############################################################################
     #Window mean.
-    mean_out = in_rast[-7:-4] + '_' + 'm' + '_'  + str(i*iteration_factor)#
+    mean_out = filename[:2] + '_' + 'm' + '_'  + str(i*iteration_factor)#
     new_m = os.path.join(root_dir,mean_out)
     Neighborhood = str(shape + height + width + units)
     print ('Window specifications', Neighborhood)
@@ -62,10 +63,14 @@ for i in range(1,range_len):
     # Process: Focal Statistics
     arcpy.gp.FocalStatistics_sa(in_rast, new_m, Neighborhood, mean, Ignore_NoData_in_calculations)
     outName_mean = os.path.join(root_dir, mean_out + 'anom')
+    print in_rast
+    print new_m
+    print outName_mean
+    time.sleep(5); print 'sleeping for 5 seconds'
     win_mean = arcpy.gp.Minus_sa(in_rast, new_m, outName_mean)
-    final_mean_mask = os.path.join(root_dir, in_rast[-7:-4] + 'mmask' + str(i*iteration_factor))
+    final_mean_mask = os.path.join(root_dir, filename[:2] + 'mmask' + str(i*iteration_factor))
     mean_thold= arcpy.gp.LessThanEqual_sa(win_mean, mean_threshold, final_mean_mask)
-    final_mean = os.path.join(root_dir, in_rast[-7:-4] + 'fim'+ str(i*iteration_factor))
+    final_mean = os.path.join(root_dir, filename[:2] + 'fim'+ str(i*iteration_factor))
     arcpy.gp.Times_sa(final_mean_mask, outName_mean, final_mean)
     ############################################################################
     #Window standarised anomalies.
