@@ -6,8 +6,17 @@ ds == Shapefile that has been dissolved using ArcGIS dissolve tool.
 
 exp == Raster file that has be expanded some amount using ArcGIS expand tool.
 
-strm = A stream that has been delineated using ArcGIS stream order tool.
+strm == A stream that has been delineated using ArcGIS stream order tool.
 
-strms = steams
+strms == steams
 
-m = Shapefile created using using ArcGIS merge tool.
+m == Shapefile created using using ArcGIS merge tool.
+
+f == DEM that has been filled using ArcGIS fill tool.
+
+dir == A filled DEM that has had ArcGIS direction tool applied to it.
+
+acc == Flow accumulation.
+
+ord == Stream order created by ArcGIS Stream Order tool.
+

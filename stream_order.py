@@ -30,18 +30,22 @@ input_catchments = "C:\PhD\junk\Mary_subcatchments_mgaz56.shp"
 target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas"
 Use_Input_Features_for_Clipping_Geometry = "true"
-dem = "C:\\PhD\\junk\\mary_5m"
+dem_file = "mary_5m"
 root = r"C:\\PhD\\junk"
+dem = os.path.join(root, dem_file)
 out_folder = "C:\\PhD\\junk"
 os.chdir(root)
 Statistics_type = "MINIMUM"
-Output_drop_raster = os.path.join(out_folder, dem[-7:-3] + 'drop')
-flowdir = os.path.join(out_folder, dem[-7:-3] + 'fdir')
-sink = os.path.join(out_folder, dem[-7:-3] + 'sink')
-watershed = os.path.join(out_folder, dem[-7:-3] + 'wshd')
-min_h = os.path.join(out_folder, dem[-7:-3] + 'min')
-max_h = os.path.join(out_folder, dem[-7:-3] + 'max')
-sink_depth = os.path.join(out_folder, dem[-7:-3] + 'dpth')
+Output_drop_raster = os.path.join(out_folder, dem[:3] + 'drop')
+flowdir = os.path.join(out_folder, dem[:3] + 'fdir')
+sink = os.path.join(out_folder, dem[:3] + 'sink')
+watershed = os.path.join(out_folder, dem[:3] + 'wshd')
+min_h = os.path.join(out_folder, dem[:3] + 'min')
+max_h = os.path.join(out_folder, dem[:3] + 'max')
+sink_depth = os.path.join(out_folder, dem[:3] + 'dpth')
+expand = "2"
+
+################################################################################
 
 # Process: Make Feature Layer
 arcpy.MakeFeatureLayer_management(input_catchments, bas, "", "", "FID FID VISIBLE NONE;Shape Shape VISIBLE NONE;Id Id VISIBLE NONE;gridcode gridcode VISIBLE NONE")
@@ -75,91 +79,39 @@ for row in cursor:
         arcpy.Clip_management(dem, extent, new, clip_shape, "-999", Use_Input_Features_for_Clipping_Geometry, "NO_MAINTAIN_EXTENT")
         #print new
         print new
-        # Process: Flow Direction
-        arcpy.gp.FlowDirection_sa(new, flowdir, "NORMAL", Output_drop_raster)#Here 'new' becomes my new dem for input into hydrological analysis.
-        # Process: Sink
-        arcpy.gp.Sink_sa(flowdir, sink)
-        # Process: Watershed
-        arcpy.gp.Watershed_sa(flowdir, sink, watershed, "VALUE")
-        # Process: Zonal Fill
-        arcpy.gp.ZonalFill_sa(watershed, new, max_h)
-        # Process: Zonal Statistics
-        arcpy.gp.ZonalStatistics_sa(watershed, "VALUE", new, min_h, Statistics_type, "DATA")
-        # Process: Minus
-        arcpy.gp.Minus_sa(max_h, min_h, sink_depth)
-        sink_max = arcpy.GetRasterProperties_management(sink_depth, "MAXIMUM")
-        max_value = sink_max.getOutput(0)
-        print max_value
-################################################################################
+        ################################################################################
 
-dem = "C:\\PhD\\junk\\mary463"
-sinkmax = arcpy.GetRasterProperties_management(sink_depth, "MAXIMUM")
-sinkm = sinkmax.getOutput(0)
-print sinkm
-# Script arguments
-mary_fill = "C:\\PhD\\junk\\mary_fill.tif" # provide a default value if unspecified
-# Local variables:
-Z_limit = str(float(sinkm) + 0.3)
+        input_dem = mary_fill # provide a default value if unspecified
+        Output_drop_raster = ""
+        Method_of_stream_ordering = "STRAHLER"
 
-# Process: Fill
-arcpy.gp.Fill_sa(dem, mary_fill, Z_limit)
+        fill_dem = os.path.join(root_dir, input_dem[-13:-8] + 'f')
+        flow_dir = os.path.join(root_dir, input_dem[-13:-8] +'dir')
+        flow_acc = os.path.join(root_dir, input_dem[-13:-8] +'fa')
+        streams = os.path.join(root_dir, input_dem[-13:-8] +'str')
+        stream_order = os.path.join(root_dir, input_dem[-13:-8] +'ord')
+        filt_stream_order = os.path.join(root_dir, input_dem[-13:-8] +'f_ord')
+        null_filt_stream_order = os.path.join(root_dir, input_dem[-13:-8] +'nf_ord')
+        expand_filt_streams = os.path.join(root_dir, input_dem[-13:-8] +'ef_ord')
 
-################################################################################
+        ################################################################################
 
-#Setup local variables.
-
-input_dem = mary_fill # provide a default value if unspecified
-Output_drop_raster = ""
-Method_of_stream_ordering = "STRAHLER"
-expand = "2"
-fill_dem = os.path.join(root_dir, input_dem[-13:-8] + 'f')
-flow_dir = os.path.join(root_dir, input_dem[-13:-8] +'dir')
-flow_acc = os.path.join(root_dir, input_dem[-13:-8] +'fa')
-streams = os.path.join(root_dir, input_dem[-13:-8] +'str')
-stream_order = os.path.join(root_dir, input_dem[-13:-8] +'ord')
-filt_stream_order = os.path.join(root_dir, input_dem[-13:-8] +'f_ord')
-null_filt_stream_order = os.path.join(root_dir, input_dem[-13:-8] +'nf_ord')
-expand_filt_streams = os.path.join(root_dir, input_dem[-13:-8] +'ef_ord')
+        arcpy.gp.Fill_sa(input_dem, fill_dem, ""); print 'fill works'
+        arcpy.gp.FlowDirection_sa(fill_dem, flow_dir, "NORMAL", Output_drop_raster); print 'flow direction works'
+        arcpy.gp.FlowAccumulation_sa(flow_dir, flow_acc, "", "FLOAT"); print 'flow accumulation works'
+        flow_acc_rast = arcpy.Raster(flow_acc); print 'flow accumulation raster saved'
+        strms  = Con(flow_acc_rast >= 1000,1,0); print 'Raster calculator for streams => 1000 works'
+        stream = strms.save(streams); print 'stream raster saved'
+        arcpy.gp.StreamOrder_sa(streams, flow_dir, stream_order, Method_of_stream_ordering); print 'stream orders work'
+        stream_ord_rast = arcpy.Raster(stream_order); print 'stream order raster saved'
+        flt_strm_ord = Con(stream_ord_rast >= 5,1,0); print 'stream order >= threshold filtered out'
+        fil_or_st = flt_strm_ord.save(filt_stream_order); print 'filtered stream orders saved'
+        fil_or_st_rast = arcpy.Raster(filt_stream_order);
+        null_strm_ord = SetNull(fil_or_st_rast == 0, fil_or_st_rast)
+        nul_or_st = null_strm_ord.save(null_filt_stream_order); print 'nulled filtered stream orders saved'
+        arcpy.gp.Expand_sa(null_filt_stream_order, expand_filt_streams, expand, "1")
 
 ################################################################################
-
-
-# Process: Fill
-arcpy.gp.Fill_sa(input_dem, fill_dem, ""); print 'fill works'
-
-# Process: Flow Direction
-arcpy.gp.FlowDirection_sa(fill_dem, flow_dir, "NORMAL", Output_drop_raster); print 'flow direction works'
-
-# Process: Flow Accumulation
-arcpy.gp.FlowAccumulation_sa(flow_dir, flow_acc, "", "FLOAT"); print 'flow accumulation works'
-
-flow_acc_rast = arcpy.Raster(flow_acc); print 'flow accumulation raster saved'
-
-# Process: Raster Calculator
-strms  = Con(flow_acc_rast >= 1000,1,0); print 'Raster calculator for streams => 1000 works'
-
-stream = strms.save(streams); print 'stream raster saved'
-
-# Process: Stream Order
-arcpy.gp.StreamOrder_sa(streams, flow_dir, stream_order, Method_of_stream_ordering); print 'stream orders work'
-
-stream_ord_rast = arcpy.Raster(stream_order); print 'stream order raster saved'
-
-# Process: Raster Calculator (2)
-flt_strm_ord = Con(stream_ord_rast >= 5,1,0); print 'stream order >= threshold filtered out'
-
-fil_or_st = flt_strm_ord.save(filt_stream_order); print 'filtered stream orders saved'
-
-fil_or_st_rast = arcpy.Raster(filt_stream_order);
-
-null_strm_ord = SetNull(fil_or_st_rast == 0, fil_or_st_rast)
-
-nul_or_st = null_strm_ord.save(null_filt_stream_order); print 'nulled filtered stream orders saved'
-
-# Process: Expand
-arcpy.gp.Expand_sa(null_filt_stream_order, expand_filt_streams, expand, "1")
-
-
 print ""
 print "Time taken: " "hours: %i, minutes: %i, seconds: %i" %(int((time.time()-t0)/3600), int(((time.time()-t0)%3600)/60), int((time.time()-t0)%60))
 
