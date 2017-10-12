@@ -96,6 +96,7 @@ for row in cursor:
         # Filtering streams.
         stream_order_list = []
         for item in streams_above_order_4:
+            print item
             order_value = item; #This is the stream order > that we want to call river.
             output = in_raster + str(item) + '_riv'; #Name of output file to be created.
             Input_true_raster_or_constant_value = "1"; #What value should the selected range become.

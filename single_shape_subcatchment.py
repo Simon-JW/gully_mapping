@@ -18,7 +18,7 @@ t0 = time.time()
 ################################################################################
 #Set sub-catchments file and corresponding DEM.
 input_catchments = "C:\PhD\junk\weany_ck.shp"
-target_basin = 0 #Needs to be full basin code e.g. 'SC #420' as a string.
+target_basin = 0 #This requires the FID of the target shape to == 0
 bas = "bas" #Short for basin.
 DEM = r"C:\PhD\junk\\wean1mfill"
 Use_Input_Features_for_Clipping_Geometry = "true"

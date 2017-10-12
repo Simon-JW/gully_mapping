@@ -25,7 +25,7 @@ os.chdir(root_dir)
 
 ################################################################################
 # Local variables:
-filename = 'wean1mfill'
+filename = 'filf'
 in_rast = os.path.join(root_dir, filename) # provide a default value if unspecified
 shape = 'Rectangle ' #Name desired shape exactly with one space before closing quotes.
 units = 'CELL' # or 'MAP', no space after
@@ -37,8 +37,8 @@ Ignore_NoData_in_calculations = "true" #or change to 'false'
 #Set parameters.
 mean_threshold = -0.1 # Highest elevation anomaly to be preserved.
 stdev_threshold = -0.5 # Highest elevation anomaly to be preserved.
-iteration_factor = 50 #This is the value to adjust the window size for each iteration.
-range_len = 10 #This is the numer of times you want the loop to iterate through
+iteration_factor = 10 #This is the value to adjust the window size for each iteration.
+range_len = 5 #This is the numer of times you want the loop to iterate through
                 #different window sizes. Because Python indexes from 0, the
                 #number of files you create will always be 1 less than this value.
 
@@ -74,17 +74,17 @@ for i in range(1,range_len):
     arcpy.gp.Times_sa(final_mean_mask, outName_mean, final_mean)
     ############################################################################
     #Window standarised anomalies.
-#    stdev_out = in_rast[-7:-4] + '_' + 's' + '_'  + str(i*iteration_factor)
-#    new_s = os.path.join(root_dir,stdev_out)
-#    print ('standard deviation raster', new_s)
-#    # Process: Focal Statistics
-#    arcpy.gp.FocalStatistics_sa(in_rast, new_s, Neighborhood, standard_deviation, Ignore_NoData_in_calculations)
-#    outName_stdev = os.path.join(root_dir, stdev_out + '_r')
-#    win_std = arcpy.gp.Divide_sa(win_mean, new_s, outName_stdev)
-#    final_std_mask = os.path.join(root_dir, in_rast[-7:-4] + 'smask'+ str(i*iteration_factor))
-#    std_thold = arcpy.gp.LessThanEqual_sa(win_mean, mean_threshold, final_std_mask)
-#    final_std = os.path.join(root_dir, in_rast[-7:-4] + 'fis'+ str(i*iteration_factor))
-#    arcpy.gp.Times_sa(final_std_mask, outName_stdev, final_std)
+    stdev_out = filename[:2] + '_' + 's' + '_'  + str(i*iteration_factor)
+    new_s = os.path.join(root_dir,stdev_out)
+    print ('standard deviation raster', new_s)
+    # Process: Focal Statistics
+    arcpy.gp.FocalStatistics_sa(in_rast, new_s, Neighborhood, standard_deviation, Ignore_NoData_in_calculations)
+    outName_stdev = os.path.join(root_dir, stdev_out + '_r')
+    win_std = arcpy.gp.Divide_sa(win_mean, new_s, outName_stdev)
+    final_std_mask = os.path.join(root_dir, filename[:2] + 'smask'+ str(i*iteration_factor))
+    std_thold = arcpy.gp.LessThanEqual_sa(win_mean, mean_threshold, final_std_mask)
+    final_std = os.path.join(root_dir, filename[:2] + 'fis'+ str(i*iteration_factor))
+    arcpy.gp.Times_sa(final_std_mask, outName_stdev, final_std)
 
 ################################################################################
     #Other optional operations.

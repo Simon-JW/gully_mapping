@@ -78,6 +78,7 @@ for stream in stream_orders_present:
 # Filtering streams.
 stream_order_list = []
 for item in streams_below_order_4:
+    print item
     order_value = item; #This is the stream order > that we want to call river.
     output = os.path.join(root_dir, filename + str(item) + '_riv'); #Name of output file to be created.
     Input_true_raster_or_constant_value = "1"; #What value should the selected range become.
@@ -86,7 +87,8 @@ for item in streams_below_order_4:
     init_shp = os.path.join(root_dir, 'init' + str(item) + ".shp")  # This will just be a temporary file.
     expand_raster = os.path.join(root_dir, filename + str(item)  + 'exp')#Output for expand operator below.
     # Expand (in_raster, number_cells, zone_values)
-    arcpy.gp.Expand_sa(output, expand_raster,  '1', "1")
+    print 'tryng to expand by ' + str(item * 2)
+    arcpy.gp.Expand_sa(output, expand_raster,  str(item * 2), "1")
     #Expand doesn't work for values > 2 so maybe try loop to expand by 1 each time.
 #    for i in range(0,10):
 #        expand_raster = os.path.join(root_dir, filename + str(i)  + 'exp')
