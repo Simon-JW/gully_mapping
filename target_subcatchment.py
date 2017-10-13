@@ -15,16 +15,35 @@ import time
 t0 = time.time()
 
 ################################################################################
-#Set sub-catchments file and corresponding DEM.
-input_catchments = "X:\PhD\junk\Mary_subcatchments_mgaz56.shp"
-target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
-bas = "bas" #Short for basin.
-dem_file = 'mary_5m'
-Use_Input_Features_for_Clipping_Geometry = "true"
-landsat_files = r"X:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
+#Set directories.
 root = r"X:\PhD\junk"; os.chdir(root)
 out = r"X:\PhD\junk"
+
+################################################################################
+#Set sub-catchments file and corresponding DEM.
+dem_file = 'mary_5m'
 DEM = os.path.join(root, dem_file)
+landsat_files = r"X:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
+catchments_shape = 'Mary_subcatchments_mgaz56.shp'
+input_catchments = os.path.join(root, catchments_shape)
+target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
+bas = "bas" #Short for basin. Is the name of the feature layer created by arcpy.MakeFeatureLayer_management below.
+
+################################################################################
+#Function for extracting extents of shapes for defining clipping geometry.
+def extents(fc):
+    extent = arcpy.Describe(fc).extent
+    west = extent.XMin
+    south = extent.YMin
+    east = extent.XMax
+    north = extent.YMax
+    width = extent.width
+    height = extent.height
+    return west, south, east, north, width, height
+
+# Obtain extents of two shapes
+#w1, s1, e1, n1, wid1, hgt1 = extents(shape1)
+#w2, s2, e2, n2, wid2, hgt2 = extents(shape2)
 
 ################################################################################
 # Process: Make Feature Layer
@@ -41,20 +60,28 @@ for row in cursor:
     if row[4] == target_basin:
         FID_val = row[0]
         arcpy.SelectLayerByAttribute_management(bas, "NEW_SELECTION", "\"FID\" = " + str(FID_val))
-        #arcpy.FeatureClassToFeatureClass_conversion (bas, out, "area" + str(FID_val)). Use this to save all of the shape files.
-        dem_raster = arcpy.sa.Raster(DEM)
-        clip_shape = bas
-        left = int(dem_raster.extent.XMin)
-        right = int(dem_raster.extent.XMax)
-        top = int(dem_raster.extent.YMax)
-        bottom = int(dem_raster.extent.YMin)
+        arcpy.FeatureClassToFeatureClass_conversion (bas, out, "area" + str(FID_val)) #. Use this to save all of the shape files.
+        area_shape = os.path.join(out, "area" + str(FID_val) + '.shp')
+        print area_shape
+        left, bottom, right, top, width, height = extents(area_shape)
+        print (left, bottom, right, top, width, height)
         new = os.path.join(out, dem_file[:3] + target_basin[4:])
         extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
-        arcpy.Clip_management(DEM, extent, new, clip_shape, "-999", Use_Input_Features_for_Clipping_Geometry, "NO_MAINTAIN_EXTENT")
+        arcpy.Clip_management(DEM, extent, new, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
         print new
-        #arcpy.FeatureClassToFeatureClass_conversion (catchments, out, "W")
 
 ################################################################################
+#Syntax for extracting extent of raster.
+
+        #dem_raster = arcpy.sa.Raster(DEM)
+        #clip_shape = bas
+        #left = int(area_shape.extent.XMin); print left # This is the syntax for getting raster extents.
+        #right = int(area_shape.extent.XMax); print right # This is the syntax for getting raster extents.
+        #top = int(area_shape.extent.YMax); print top # This is the syntax for getting raster extents.
+        #bottom = int(area_shape.extent.YMin); print bottom # This is the syntax for getting raster extents.
+
+################################################################################
+#Set landsat output file names.
 band_1 = 'B4'
 band_2 = 'B5'
 band_3 = 'B6'
@@ -63,22 +90,27 @@ rgb_out = dem_file[:3] + '_' + str(band_1[-1:]) + str(band_2[-1:]) + str(band_3[
 rgb_file = os.path.join(out, rgb_out)
 #landsat_files = r"C:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
 os.chdir(landsat_files)
-################################################################################
 
+################################################################################
+#Clip satellite imagery.
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for file in filenames:
         if file.endswith('.tif'):
-            image_raster = arcpy.sa.Raster(file)
-            left = int(image_raster.extent.XMin)
-            right = int(image_raster.extent.XMax)
-            top = int(image_raster.extent.YMax)
-            bottom = int(image_raster.extent.YMin)
             new_rgb = os.path.join(out, dem_file[:3] + file[-7:])
             extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
-            arcpy.Clip_management(file, extent, new_rgb, clip_shape, "-999", Use_Input_Features_for_Clipping_Geometry, "NO_MAINTAIN_EXTENT")
+            arcpy.Clip_management(file, extent, new_rgb, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
             print new_rgb
 
 arcpy.CompositeBands_management(rgb_inputs, rgb_file)
+################################################################################
+#Syntax for extracting extent of raster.
+
+            #image_raster = arcpy.sa.Raster(file)
+            #left = int(image_raster.extent.XMin)
+            #right = int(image_raster.extent.XMax)
+            #top = int(image_raster.extent.YMax)
+            #bottom = int(image_raster.extent.YMin)
+
 ################################################################################
 #Clean up unwanted files.
 os.chdir(root)
@@ -90,7 +122,8 @@ for (dirpath, dirnames, filenames) in os.walk('.'):
             arcpy.Delete_management(file)
 
 #Delete larger DEM used for clipping sub-catchment.
-arcpy.Delete_management(DEM)
+#arcpy.Delete_management(DEM)
+arcpy.Delete_management(area_shape)
 
 ################################################################################
 print ""
