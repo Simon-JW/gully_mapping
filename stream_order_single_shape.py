@@ -21,6 +21,7 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 #Set the working directory.
 root_dir = (r'C:\\PhD\\junk')
 os.chdir(root_dir)
+out_folder = (r'C:\\PhD\\junk')
 
 ################################################################################
 # Local variables:
@@ -28,7 +29,6 @@ area = 'weany_ck.shp'
 input_catchments = os.path.join(root_dir, area)
 target_basin = 0 #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas"
-Use_Input_Features_for_Clipping_Geometry = "true"
 dem_file = 'wean1m'
 dem = os.path.join(root_dir, dem_file)
 Statistics_type = "MINIMUM"
@@ -49,21 +49,35 @@ print fields
 cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3]])
 
 ################################################################################
+#Function for extracting extents of shapes for defining clipping geometry.
+def extents(fc):
+    extent = arcpy.Describe(fc).extent
+    west = extent.XMin
+    south = extent.YMin
+    east = extent.XMax
+    north = extent.YMax
+    width = extent.width
+    height = extent.height
+    return west, south, east, north, width, height
+
+# Obtain extents of two shapes
+#w1, s1, e1, n1, wid1, hgt1 = extents(shape1)
+#w2, s2, e2, n2, wid2, hgt2 = extents(shape2)
+
+################################################################################
 #Main program.
 for row in cursor:
     if row[0] == target_basin:
         FID_val = row[0]
         arcpy.SelectLayerByAttribute_management(bas, "NEW_SELECTION", "\"FID\" = " + str(FID_val))
-        #arcpy.FeatureClassToFeatureClass_conversion (bas, out_folder, "area" + str(FID_val)). Use this to save all of the shape files.
-        dem_raster = arcpy.sa.Raster(dem)
-        clip_shape = bas
-        left = int(dem_raster.extent.XMin)
-        right = int(dem_raster.extent.XMax)
-        top = int(dem_raster.extent.YMax)
-        bottom = int(dem_raster.extent.YMin)
+        arcpy.FeatureClassToFeatureClass_conversion (bas, out_folder, "area" + str(FID_val))#. Use this to save all of the shape files.
+        area_shape = os.path.join(out_folder, "area" + str(FID_val) + '.shp')
+        print area_shape
+        left, bottom, right, top, width, height = extents(area_shape)
+        print (left, bottom, right, top, width, height)
         new = os.path.join(root_dir, dem_file[:3] + str(target_basin))
         extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
-        arcpy.Clip_management(dem, extent, new, clip_shape, "-999", Use_Input_Features_for_Clipping_Geometry, "NO_MAINTAIN_EXTENT")
+        arcpy.Clip_management(dem, extent, new, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
         print new
         ################################################################################
         #Setup local variables.
@@ -77,6 +91,13 @@ for row in cursor:
         filt_stream_order = os.path.join(root_dir, area[0:3] +'f_ord')
         null_filt_stream_order = os.path.join(root_dir, area[0:3] +'nf_ord')
         expand_filt_streams = os.path.join(root_dir, area[0:3] +'ef_ord')
+        ################################################################################
+        #dem_raster = arcpy.sa.Raster(dem)
+        #clip_shape = bas
+        #left = int(dem_raster.extent.XMin)
+        #right = int(dem_raster.extent.XMax)
+        #top = int(dem_raster.extent.YMax)
+        #bottom = int(dem_raster.extent.YMin)
 
         ################################################################################
         # Main program
