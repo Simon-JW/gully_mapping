@@ -10,7 +10,6 @@
 #-------------------------------------------------------------------------------
 #Take ~5-10 mins per sub-catchment.
 
-# Import arcpy module
 import arcpy
 import os
 from arcpy import env
@@ -21,16 +20,34 @@ import sys
 arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
-# Local variables:
-#Set sub-catchments file and corresponding DEM.
-input_catchments = "X:\PhD\junk\Mary_subcatchments_mgaz56.shp"
-target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
-bas = "bas" #Short for basin.
-filename = 'mary_ord'
-Use_Input_Features_for_Clipping_Geometry = "true"
+#Set working directories.
 root_dir = r"X:\PhD\junk"; os.chdir(root_dir)
 out = r"X:\PhD\junk"
-DEM = os.path.join(root_dir, filename)
+
+################################################################################
+#Set sub-catchments file and corresponding DEM.
+area = 'Mary_subcatchments_mgaz56.shp'
+input_catchments = os.path.join(root_dir, area)
+target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
+bas = "bas" #Short for basin.
+dem_file = 'mary_ord'
+DEM = os.path.join(root_dir, dem_file)
+
+################################################################################
+#Function for extracting extents of shapes for defining clipping geometry.
+def extents(fc):
+    extent = arcpy.Describe(fc).extent
+    west = extent.XMin
+    south = extent.YMin
+    east = extent.XMax
+    north = extent.YMax
+    width = extent.width
+    height = extent.height
+    return west, south, east, north, width, height
+
+# Obtain extents of two shapes
+#w1, s1, e1, n1, wid1, hgt1 = extents(shape1)
+#w2, s2, e2, n2, wid2, hgt2 = extents(shape2)
 
 ################################################################################
 # Process: Make Feature Layer
@@ -47,20 +64,27 @@ for row in cursor:
     if row[4] == target_basin:
         FID_val = row[0]
         arcpy.SelectLayerByAttribute_management(bas, "NEW_SELECTION", "\"FID\" = " + str(FID_val))
-        #arcpy.FeatureClassToFeatureClass_conversion (bas, out, "area" + str(FID_val)). Use this to save all of the shape files.
-        dem_raster = arcpy.sa.Raster(DEM)
-        clip_shape = bas
-        left = int(dem_raster.extent.XMin)
-        right = int(dem_raster.extent.XMax)
-        top = int(dem_raster.extent.YMax)
-        bottom = int(dem_raster.extent.YMin)
-        new = os.path.join(out, filename[0:3] + target_basin[4:])
+        arcpy.FeatureClassToFeatureClass_conversion (bas, out, "area" + str(FID_val))#. Use this to save all of the shape files.
+        area_shape = os.path.join(out_folder, "area" + str(FID_val) + '.shp')
+        print area_shape
+        left, bottom, right, top, width, height = extents(area_shape)
+        print (left, bottom, right, top, width, height)
+        new = os.path.join(out, dem_file[0:3] + target_basin[4:])
         print new
         extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
-        arcpy.Clip_management(DEM, extent, new, clip_shape, "-999", Use_Input_Features_for_Clipping_Geometry, "NO_MAINTAIN_EXTENT")
+        arcpy.Clip_management(DEM, extent, new, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
         print new
         #arcpy.FeatureClassToFeatureClass_conversion (catchments, out, "W")
         in_raster = os.path.join(root_dir, new) # This should be a clipped shape from the large stream order raster.
+
+        ################################################################################
+        #dem_raster = arcpy.sa.Raster(DEM)
+        #clip_shape = bas
+        #left = int(dem_raster.extent.XMin)
+        #right = int(dem_raster.extent.XMax)
+        #top = int(dem_raster.extent.YMax)
+        #bottom = int(dem_raster.extent.YMin)
+
         ################################################################################
         #This part is required because the function below needs the raster to have
         #an attribute table and can only build and attribute table on single band
@@ -104,11 +128,8 @@ for row in cursor:
             diss_shp = in_raster + str(item) + "_ds"#Output for dissolve operator below.
             init_shp = "X:\\PhD\\junk\\init" + str(item) + ".shp"  # This will just be a temporary file.
             expand_raster = in_raster + str(item)  + 'exp'#Output for expand operator below.
-            # Expand (in_raster, number_cells, zone_values)
             arcpy.gp.Expand_sa(output, expand_raster,  str(item - 4), "1")
-            # Process: Raster to Polygon
             arcpy.RasterToPolygon_conversion(expand_raster, init_shp, "SIMPLIFY", "VALUE")
-            # Process: Dissolve
             arcpy.Dissolve_management(init_shp, diss_shp, "", "", "MULTI_PART", "DISSOLVE_LINES")
             stream_order_list.append(diss_shp)#Creating a list to use for into into megre operator below.
             arcpy.Delete_management(output)
@@ -121,14 +142,10 @@ for row in cursor:
         for item in stream_order_list:
             print item
             number_of_items = len(stream_order_list)
-
         print str(number_of_items) + ' different stream classes.'
-
-        merged_streams = os.path.join(root_dir, filename[0:3] + 'm') #Output for merge operator below.
+        merged_streams = os.path.join(root_dir, dem_file[0:3] + 'm') #Output for merge operator below.
         print merged_streams
-
         #Can use the oder value to only merge correct streams i.e. 5 & 8 or 6 & 8 etc.
-
         #Select the correct arrangement based on number of streams > order 4
         if number_of_items == 1:
             print "Only one stream > order 4"
