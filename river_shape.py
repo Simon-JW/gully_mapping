@@ -22,7 +22,7 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 ################################################################################
 #Set working directories.
 root_dir = r"X:\PhD\junk"; os.chdir(root_dir)
-out = r"X:\PhD\junk"
+out_folder = r"X:\PhD\junk"
 
 ################################################################################
 #Set sub-catchments file and corresponding DEM.
@@ -64,17 +64,16 @@ for row in cursor:
     if row[4] == target_basin:
         FID_val = row[0]
         arcpy.SelectLayerByAttribute_management(bas, "NEW_SELECTION", "\"FID\" = " + str(FID_val))
-        arcpy.FeatureClassToFeatureClass_conversion (bas, out, "area" + str(FID_val))#. Use this to save all of the shape files.
+        arcpy.FeatureClassToFeatureClass_conversion (bas, out_folder, "area" + str(FID_val))#. Use this to save all of the shape files.
         area_shape = os.path.join(out_folder, "area" + str(FID_val) + '.shp')
         print area_shape
         left, bottom, right, top, width, height = extents(area_shape)
         print (left, bottom, right, top, width, height)
-        new = os.path.join(out, dem_file[0:3] + target_basin[4:])
+        new = os.path.join(out_folder, dem_file[0:3] + target_basin[4:])
         print new
         extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
         arcpy.Clip_management(DEM, extent, new, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
         print new
-        #arcpy.FeatureClassToFeatureClass_conversion (catchments, out, "W")
         in_raster = os.path.join(root_dir, new) # This should be a clipped shape from the large stream order raster.
 
         ################################################################################
