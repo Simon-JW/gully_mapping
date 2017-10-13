@@ -20,45 +20,44 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set the working directory.
-
 root_dir = (r'C:\\PhD\\junk')
+out = (r'C:\\PhD\\junk')
 os.chdir(root_dir)
 ################################################################################
-
 # Local variables:
-input_catchments = "C:\PhD\junk\Mary_subcatchments_mgaz56.shp"
 target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas"
-Use_Input_Features_for_Clipping_Geometry = "true"
-dem_file = "mary_5m"
-root = r"C:\\PhD\\junk"
-dem = os.path.join(root, dem_file)
+dem_file = "qldz56.tif"
+dem = os.path.join(root_dir, dem_file)
 out_folder = "C:\\PhD\\junk"
-os.chdir(root)
+catchments_shape = 'Mary_subcatchments_mgaz56.shp'
+input_catchments = os.path.join(root_dir, catchments_shape)
+os.chdir(root_dir)
 Statistics_type = "MINIMUM"
-Output_drop_raster = os.path.join(out_folder, dem[:3] + 'drop')
-flowdir = os.path.join(out_folder, dem[:3] + 'fdir')
-sink = os.path.join(out_folder, dem[:3] + 'sink')
-watershed = os.path.join(out_folder, dem[:3] + 'wshd')
-min_h = os.path.join(out_folder, dem[:3] + 'min')
-max_h = os.path.join(out_folder, dem[:3] + 'max')
-sink_depth = os.path.join(out_folder, dem[:3] + 'dpth')
 expand = "2"
 
 ################################################################################
+#Function for extracting extent from shapefiles.
+def extents(fc):
+    extent = arcpy.Describe(fc).extent
+    west = extent.XMin
+    south = extent.YMin
+    east = extent.XMax
+    north = extent.YMax
+    width = extent.width
+    height = extent.height
+    return west, south, east, north, width, height
 
+# Obtain extents of two shapes
+#w1, s1, e1, n1, wid1, hgt1 = extents(shape1)
+#w2, s2, e2, n2, wid2, hgt2 = extents(shape2)
+
+################################################################################
 # Process: Make Feature Layer
 arcpy.MakeFeatureLayer_management(input_catchments, bas, "", "", "FID FID VISIBLE NONE;Shape Shape VISIBLE NONE;Id Id VISIBLE NONE;gridcode gridcode VISIBLE NONE")
 #This is required because SelectByFeature and SelectByAttribute do not work on shape files using arcpy. Hence they need to first be convereted to feature layers.
-
-#Look at what field names are in the shape file table.
-
 fields = [f.name for f in arcpy.ListFields(bas)]#Just tells me what field names the data has.
-
-print len(fields)
-
-print fields
-
+print len(fields); print fields
 cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3], fields[4]])
 
 ################################################################################
@@ -67,32 +66,37 @@ for row in cursor:
     if row[4] == target_basin:
         FID_val = row[0]
         arcpy.SelectLayerByAttribute_management(bas, "NEW_SELECTION", "\"FID\" = " + str(FID_val))
-        #arcpy.FeatureClassToFeatureClass_conversion (bas, out_folder, "area" + str(FID_val)). Use this to save all of the shape files.
-        dem_raster = arcpy.sa.Raster(dem)
-        clip_shape = bas
-        left = int(dem_raster.extent.XMin)
-        right = int(dem_raster.extent.XMax)
-        top = int(dem_raster.extent.YMax)
-        bottom = int(dem_raster.extent.YMin)
-        new = os.path.join(out_folder, dem[-7:-3] + target_basin[4:])
+        arcpy.FeatureClassToFeatureClass_conversion (bas, out_folder, "area" + str(FID_val)) #. Use this to save all of the shape files.
+        area_shape = os.path.join(out, "area" + str(FID_val) + '.shp')
+        print area_shape
+        left, bottom, right, top, width, height = extents(area_shape)
+        print (left, bottom, right, top, width, height)
+        new = os.path.join(out_folder, dem_file[:3] + target_basin[4:])
         extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
-        arcpy.Clip_management(dem, extent, new, clip_shape, "-999", Use_Input_Features_for_Clipping_Geometry, "NO_MAINTAIN_EXTENT")
+        arcpy.Clip_management(dem, extent, new, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
         #print new
         print new
         ################################################################################
+        #Syntax for taking extents of rasters.
 
-        input_dem = mary_fill # provide a default value if unspecified
+        #dem_raster = arcpy.sa.Raster(dem)
+        #clip_shape = bas
+        #left = int(dem_raster.extent.XMin)
+        #right = int(dem_raster.extent.XMax)
+        #top = int(dem_raster.extent.YMax)
+        #bottom = int(dem_raster.extent.YMin)
+        ################################################################################
+        input_dem = new # provide a default value if unspecified
         Output_drop_raster = ""
         Method_of_stream_ordering = "STRAHLER"
-
-        fill_dem = os.path.join(root_dir, input_dem[-13:-8] + 'f')
-        flow_dir = os.path.join(root_dir, input_dem[-13:-8] +'dir')
-        flow_acc = os.path.join(root_dir, input_dem[-13:-8] +'fa')
-        streams = os.path.join(root_dir, input_dem[-13:-8] +'str')
-        stream_order = os.path.join(root_dir, input_dem[-13:-8] +'ord')
-        filt_stream_order = os.path.join(root_dir, input_dem[-13:-8] +'f_ord')
-        null_filt_stream_order = os.path.join(root_dir, input_dem[-13:-8] +'nf_ord')
-        expand_filt_streams = os.path.join(root_dir, input_dem[-13:-8] +'ef_ord')
+        fill_dem = os.path.join(root_dir, dem_file[:3] + 'f')
+        flow_dir = os.path.join(root_dir, dem_file[:3] +'dir')
+        flow_acc = os.path.join(root_dir, dem_file[:3] +'fa')
+        streams = os.path.join(root_dir, dem_file[:3] +'str')
+        stream_order = os.path.join(root_dir, dem_file[:3] +'ord')
+        filt_stream_order = os.path.join(root_dir, dem_file[:3] +'f_ord')
+        null_filt_stream_order = os.path.join(root_dir, dem_file[:3] +'nf_ord')
+        expand_filt_streams = os.path.join(root_dir, dem_file[:3] +'ef_ord')
 
         ################################################################################
 
