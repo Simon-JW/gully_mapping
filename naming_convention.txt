@@ -20,3 +20,11 @@ acc == Flow accumulation.
 
 ord == Stream order created by ArcGIS Stream Order tool.
 
+lseq == Less than or equal to.
+
+greq == Greater than or equal to.
+
+lss == Less than.
+
+Grt == Greater than.
+
