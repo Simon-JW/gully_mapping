@@ -92,6 +92,8 @@ for row in cursor:
         null_filt_stream_order = os.path.join(root_dir, area[0:3] +'nf_ord')
         expand_filt_streams = os.path.join(root_dir, area[0:3] +'ef_ord')
         ################################################################################
+#Syntax for extracting extent of raster.
+
         #dem_raster = arcpy.sa.Raster(dem)
         #clip_shape = bas
         #left = int(dem_raster.extent.XMin)

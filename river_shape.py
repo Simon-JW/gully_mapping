@@ -21,8 +21,8 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directories.
-root_dir = r"X:\PhD\junk"; os.chdir(root_dir)
-out_folder = r"X:\PhD\junk"
+root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
+out_folder = r"C:\PhD\junk"
 
 ################################################################################
 #Set sub-catchments file and corresponding DEM.
@@ -30,7 +30,7 @@ area = 'Mary_subcatchments_mgaz56.shp'
 input_catchments = os.path.join(root_dir, area)
 target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas" #Short for basin.
-dem_file = 'mary_ord'
+dem_file = 'qldord'
 DEM = os.path.join(root_dir, dem_file)
 
 ################################################################################
@@ -77,6 +77,8 @@ for row in cursor:
         in_raster = os.path.join(root_dir, new) # This should be a clipped shape from the large stream order raster.
 
         ################################################################################
+#Syntax for extracting extent of raster.
+
         #dem_raster = arcpy.sa.Raster(DEM)
         #clip_shape = bas
         #left = int(dem_raster.extent.XMin)
@@ -125,7 +127,7 @@ for row in cursor:
             Input_true_raster_or_constant_value = "1"; #What value should the selected range become.
             arcpy.gp.Con_sa(in_raster, Input_true_raster_or_constant_value, output, "", "\"VALUE\" =" + str(item))
             diss_shp = in_raster + str(item) + "_ds"#Output for dissolve operator below.
-            init_shp = "X:\\PhD\\junk\\init" + str(item) + ".shp"  # This will just be a temporary file.
+            init_shp = os.path.join(out_folder, 'init' + str(item) + ".shp")  # This will just be a temporary file.
             expand_raster = in_raster + str(item)  + 'exp'#Output for expand operator below.
             arcpy.gp.Expand_sa(output, expand_raster,  str(item - 4), "1")
             arcpy.RasterToPolygon_conversion(expand_raster, init_shp, "SIMPLIFY", "VALUE")
