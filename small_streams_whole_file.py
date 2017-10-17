@@ -8,9 +8,7 @@
 # Copyright:   (c) Simon Walker 2017
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
-
-
-#Take ~10-15 mins per sub-catchment.
+#Take ~10-15 seconds per sub-catchment.
 
 # Import arcpy module
 import arcpy
@@ -25,7 +23,7 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 ################################################################################
 # Local variables:
 #Set sub-catchments file and corresponding DEM.
-filename = 'filord'
+filename = 'weaord'
 root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
 out = r"C:\PhD\junk"
 DEM = os.path.join(root_dir, filename)
@@ -35,9 +33,9 @@ Times = os.path.join(root_dir, 'Times')
 desired_stream_orders = 4 # This is then number <= the stream order of interest.
 
 ################################################################################
-
 #arcpy.FeatureClassToFeatureClass_conversion (catchments, out, "W")
 in_raster = os.path.join(root_dir, DEM) # This should be a clipped shape from the large stream order raster.
+
 ################################################################################
 #This part is required because the function below needs the raster to have
 #an attribute table and can only build and attribute table on single band
@@ -76,25 +74,43 @@ for stream in stream_orders_present:
 
 ################################################################################
 # Filtering streams.
+arcpy.env.overwriteOutput = True
 stream_order_list = []
 for item in streams_below_order_4:
-    print item
+    print 'Looking at stream order: ' + str(item)
+    #arcpy.env.workspace = os.path.join(root_dir, 'junk.gdb')
+    #arcpy.env.scratchWorkspace = os.path.join(root_dir, 'junk.gdb')
     order_value = item; #This is the stream order > that we want to call river.
     output = os.path.join(root_dir, filename + str(item) + '_riv'); #Name of output file to be created.
     Input_true_raster_or_constant_value = "1"; #What value should the selected range become.
     arcpy.gp.Con_sa(in_raster, Input_true_raster_or_constant_value, output, "", "\"VALUE\" =" + str(item))
     diss_shp =  os.path.join(root_dir, filename + str(item) + "_ds") #Output for dissolve operator below.
     init_shp = os.path.join(root_dir, 'init' + str(item) + ".shp")  # This will just be a temporary file.
-    expand_raster = os.path.join(root_dir, filename + str(item)  + 'exp')#Output for expand operator below.
-    # Expand (in_raster, number_cells, zone_values)
-    print 'tryng to expand by ' + str(item * 2)
-    arcpy.gp.Expand_sa(output, expand_raster,  str(item * 2), "1")
-    #Expand doesn't work for values > 2 so maybe try loop to expand by 1 each time.
-#    for i in range(0,10):
-#        expand_raster = os.path.join(root_dir, filename + str(i)  + 'exp')
-#        arcpy.gp.Expand_sa(output, expand_raster,  '1', "1")
+    expand_raster = os.path.join(root_dir, 'exp' + filename + str(item))#Output for expand operator below.
+    print 'Going into expand loop...';
+    ################################################################################
+    #This is only required because the expand tool will not take values > 4
+    #when using arcpy. So this just performs expand within a loop, always only
+    #expanding by a value of 1 at a time.
+
+    for i in range(0, item):
+        print 'Sleeping for 5 seconds...'; time.sleep(5)
+        print 'expand number: ' + str(i)
+        if i == 0:
+            input_expand = output #expand_raster
+            print input_expand + ' - for value: ' + str(i);
+            output_expand = os.path.join(root_dir, expand_raster + str(i))
+            arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")
+        elif i > 0:
+            input_expand = os.path.join(root_dir, expand_raster + str(i - 1))
+            print input_expand + ' - for value: ' + str(i)
+            output_expand = os.path.join(root_dir, expand_raster + str(i))
+            print output_expand + ' - for value: ' + str(i)
+            arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")
+
+    ################################################################################
     # Process: Raster to Polygon
-    arcpy.RasterToPolygon_conversion(expand_raster, init_shp, "SIMPLIFY", "VALUE")
+    arcpy.RasterToPolygon_conversion(output_expand, init_shp, "SIMPLIFY", "VALUE")
     # Process: Dissolve
     arcpy.Dissolve_management(init_shp, diss_shp, "", "", "MULTI_PART", "DISSOLVE_LINES")
     stream_order_list.append(diss_shp)#Creating a list to use for into into megre operator below.
@@ -136,16 +152,26 @@ arcpy.Dissolve_management(in_diss, diss_merge, "", "", "MULTI_PART", "DISSOLVE_L
 
 ################################################################################
 #Clean up unwanted data.
-#os.chdir(root_dir)
-#for (dirpath, dirnames, filenames) in os.walk('.'):
-#    for file in filenames:
-#        if file[-7:-4] == '_ds':
-#            print "This file will be deleted " + str(file)
-#            arcpy.Delete_management(file)
+root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
+for (dirpath, dirnames, filenames) in os.walk('.'):
+    for file in filenames:
+        if file.startswith('exp'):
+            print "This file will be deleted " + str(file)
+            #arcpy.Delete_management(file)
+
+root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
+for (dirpath, dirnames, filenames) in os.walk('.'):
+    for dir in dirnames:
+        if dir[:3] == 'exp':
+            print dir
+            print "This directory will be deleted " + str(dir)
+            arcpy.Delete_management(dir)
 
 arcpy.Delete_management(LessThan)
 arcpy.Delete_management(Times)
 arcpy.Delete_management(SetNull)
+arcpy.Delete_management(in_diss)
+arcpy.Delete_management(conv)
 
 ################################################################################
 #Time taken.
