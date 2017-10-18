@@ -10,6 +10,17 @@
 #-------------------------------------------------------------------------------
 #Take ~10-15 seconds per sub-catchment.
 
+#Requires:
+# 1. Stream order raster for target area.
+
+#Creates:
+# 1. Clipped DEM of target catchment.
+# 2. Clipped shape of target area named according to FID of that shape.
+# 3. One shapefile for each stream order <= target stream order.
+# 4. One shapefile combining all speerate stream order shapefiles.
+
+################################################################################
+
 # Import arcpy module
 import arcpy
 import os
