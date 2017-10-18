@@ -26,5 +26,9 @@ greq == Greater than or equal to.
 
 lss == Less than.
 
-Grt == Greater than.
+grt == Greater than.
+
+lge == Large.
+
+sml == Small.
 
