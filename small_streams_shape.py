@@ -8,7 +8,7 @@
 # Copyright:   (c) walkers 2017
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
-#Take ~10-15 mins per sub-catchment.
+#Take ~1-2 mins per sub-catchment.
 
 #Requires:
 # 1. Stream order raster for target area or broader area (it will be clipped by the shape of the target catchment in either case).
@@ -21,7 +21,6 @@
 # 4. One shapefile combining all speerate stream order shapefiles.
 
 ################################################################################
-
 # Import arcpy module
 import arcpy
 import os
