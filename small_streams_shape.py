@@ -8,8 +8,19 @@
 # Copyright:   (c) walkers 2017
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
-
 #Take ~10-15 mins per sub-catchment.
+
+#Requires:
+# 1. Stream order raster for target area or broader area (it will be clipped by the shape of the target catchment in either case).
+# 2. Shapefile with multiple sub-catchments that can be selected individually.
+
+#Creates:
+# 1. Clipped DEM of target catchment.
+# 2. Clipped shape of target area named according to FID of that shape.
+# 3. One shapefile for each stream order <= target stream order.
+# 4. One shapefile combining all speerate stream order shapefiles.
+
+################################################################################
 
 # Import arcpy module
 import arcpy
@@ -32,7 +43,7 @@ area = 'Mary_subcatchments_mgaz56.shp'
 input_catchments = os.path.join(root_dir, area)
 target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas" #Short for basin.
-filename = 'qldord'
+filename = 'qldord' #Input stream order raster.
 DEM = os.path.join(root_dir, filename)
 min_ord = 4; # This is the value <= that I want to define small streams as.
 
