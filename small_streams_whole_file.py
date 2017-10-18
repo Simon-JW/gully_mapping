@@ -23,14 +23,14 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 ################################################################################
 # Local variables:
 #Set sub-catchments file and corresponding DEM.
-filename = 'weaord'
+filename = 'qldord'
 root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
 out = r"C:\PhD\junk"
 DEM = os.path.join(root_dir, filename)
 LessThan = os.path.join(root_dir, 'LessThan')
 SetNull = os.path.join(root_dir, 'SetNull')
 Times = os.path.join(root_dir, 'Times')
-desired_stream_orders = 4 # This is then number <= the stream order of interest.
+desired_stream_orders = 2 # This is then number <= the stream order of interest.
 
 ################################################################################
 #arcpy.FeatureClassToFeatureClass_conversion (catchments, out, "W")
@@ -96,11 +96,11 @@ for item in streams_below_order_4:
     for i in range(0, item):
         print 'Sleeping for 5 seconds...'; time.sleep(5)
         print 'expand number: ' + str(i)
-        if i == 0:
-            input_expand = output #expand_raster
+        if i == 0: #For the first loop iteration, the file to be expanded will just be the input stream order file (or one stream order from that file).
+            input_expand = output #This is the file created by the Con statement above.
             print input_expand + ' - for value: ' + str(i);
-            output_expand = os.path.join(root_dir, expand_raster + str(i))
-            arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")
+            output_expand = os.path.join(root_dir, expand_raster + str(i))#Name the expanded raster to be created.
+            arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")#Create the expanded raster.
         elif i > 0:
             input_expand = os.path.join(root_dir, expand_raster + str(i - 1))
             print input_expand + ' - for value: ' + str(i)
