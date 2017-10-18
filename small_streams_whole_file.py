@@ -78,16 +78,16 @@ def unique_values(table, field):
 
 stream_orders_present = unique_values(Times, 'VALUE')
 
-streams_below_order_4 = []
+min_ord_streams = []
 for stream in stream_orders_present:
     if stream <= desired_stream_orders:
-        streams_below_order_4.append(stream)
+        min_ord_streams.append(stream)
 
 ################################################################################
 # Filtering streams.
 arcpy.env.overwriteOutput = True
 stream_order_list = []
-for item in streams_below_order_4:
+for item in min_ord_streams:
     print 'Looking at stream order: ' + str(item)
     #arcpy.env.workspace = os.path.join(root_dir, 'junk.gdb')
     #arcpy.env.scratchWorkspace = os.path.join(root_dir, 'junk.gdb')
