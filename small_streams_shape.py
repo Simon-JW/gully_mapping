@@ -119,12 +119,12 @@ for row in cursor:
         smallest_stream = int(min_order.getOutput(0))#This gets change to int so that it
         #can be used as an input into value range below.
         print "Lowest stream order present: " + str(smallest_stream)
-        if smallest_stream >= 4:
+        if smallest_stream >= min_ord:
             print 'No streams small enough.'
 
         ################################################################################
         #Find all unique stream order values and create a new list containing only
-        #those values > 4.
+        #those values > min_ord.
         def unique_values(table, field):
             with arcpy.da.SearchCursor(table, [field]) as cursor:
                 return sorted({row[0] for row in cursor})
@@ -174,7 +174,7 @@ for row in cursor:
 
         ################################################################################
         #Figure out whether there are streams > order 4 for the target area. If so how many
-        #different orders exist > 4.
+        #different orders exist > min_ord.
         for item in stream_order_list:
             print item
             number_of_items = len(stream_order_list)
@@ -188,16 +188,16 @@ for row in cursor:
 
         #Select the correct arrangement based on number of streams > order 4
         if number_of_items == 1:
-            print "Only one stream <= order 4"
+            print "Only one stream <= " + str(min_ord)
             arcpy.Merge_management([str(stream_order_list[0]) + '.shp'], merged_streams)
         elif number_of_items == 2:
-            print "Two streams <= order 4"
+            print "Two streams <= " + str(min_ord)
             arcpy.Merge_management([str(stream_order_list[0]) + '.shp', str(stream_order_list[1]) + '.shp'], merged_streams)
         elif number_of_items == 3:
-            print "Three streams <= order 4"
+            print "Three streams <= " + str(min_ord)
             arcpy.Merge_management([str(stream_order_list[0]) + '.shp', str(stream_order_list[1]) + '.shp', str(stream_order_list[2]) + '.shp'], merged_streams)
         elif number_of_items == 4:
-            print "Four streams <= order 4"
+            print "Four streams <= " + str(min_ord)
             arcpy.Merge_management([str(stream_order_list[0]) + '.shp', str(stream_order_list[1]) + '.shp', str(stream_order_list[2]) + '.shp', str(stream_order_list[3]) + '.shp'], merged_streams)
 
         diss_merge = merged_streams + 'lseq' + str(min_ord) + 'ds' + ".shp"  # This will just be a temporary file.
