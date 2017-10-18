@@ -33,6 +33,7 @@ bas = "bas" #Short for basin.
 dem_file = 'qldord'
 DEM = os.path.join(root_dir, dem_file)
 
+
 ################################################################################
 #Function for extracting extents of shapes for defining clipping geometry.
 def extents(fc):
@@ -112,15 +113,15 @@ for row in cursor:
 
         stream_orders_present = unique_values(conv, 'VALUE')
 
-        streams_above_order_4 = []
+        max_ord_streams = []
         for stream in stream_orders_present:
             if stream > 4:
-                streams_above_order_4.append(stream)
+                max_ord_streams.append(stream)
 
         ################################################################################
         # Filtering streams.
         stream_order_list = []
-        for item in streams_above_order_4:
+        for item in max_ord_streams:
             print item
             order_value = item; #This is the stream order > that we want to call river.
             output = in_raster + str(item) + '_riv'; #Name of output file to be created.

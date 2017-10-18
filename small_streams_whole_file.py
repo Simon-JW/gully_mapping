@@ -60,6 +60,7 @@ arcpy.gp.LessThan_sa(conv, Input_raster_or_constant_value_2, LessThan)
 arcpy.gp.SetNull_sa(LessThan, Input_false_raster_or_constant_value, SetNull, "")
 arcpy.gp.Times_sa(conv, SetNull, Times)
 arcpy.BuildRasterAttributeTable_management(Times, "Overwrite")
+
 ################################################################################
 #Find the highest stream order in the raster.
 min_order = arcpy.GetRasterProperties_management(in_raster, "MINIMUM")
@@ -109,20 +110,16 @@ for item in min_ord_streams:
         print 'expand number: ' + str(i)
         if i == 0: #For the first loop iteration, the file to be expanded will just be the input stream order file (or one stream order from that file).
             input_expand = output #This is the file created by the Con statement above.
-            print input_expand + ' - for value: ' + str(i);
             output_expand = os.path.join(root_dir, expand_raster + str(i))#Name the expanded raster to be created.
             arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")#Create the expanded raster.
         elif i > 0:
             input_expand = os.path.join(root_dir, expand_raster + str(i - 1))
-            print input_expand + ' - for value: ' + str(i)
             output_expand = os.path.join(root_dir, expand_raster + str(i))
-            print output_expand + ' - for value: ' + str(i)
             arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")
 
     ################################################################################
     # Process: Raster to Polygon
     arcpy.RasterToPolygon_conversion(output_expand, init_shp, "SIMPLIFY", "VALUE")
-    # Process: Dissolve
     arcpy.Dissolve_management(init_shp, diss_shp, "", "", "MULTI_PART", "DISSOLVE_LINES")
     stream_order_list.append(diss_shp)#Creating a list to use for into into megre operator below.
     arcpy.Delete_management(output)
@@ -145,16 +142,16 @@ print merged_streams
 
 #Select the correct arrangement based on number of streams > order 4
 if number_of_items == 1:
-    print "Only one stream <= order 4"
+    print "Only one stream <= " + str(desired_stream_orders)
     arcpy.Merge_management([str(stream_order_list[0]) + '.shp'], merged_streams)
 elif number_of_items == 2:
-    print "Two streams <= order 4"
+    print "Two streams <= " + str(desired_stream_orders)
     arcpy.Merge_management([str(stream_order_list[0]) + '.shp', str(stream_order_list[1]) + '.shp'], merged_streams)
 elif number_of_items == 3:
-    print "Three streams <= order 4"
+    print "Three streams <= " + str(desired_stream_orders)
     arcpy.Merge_management([str(stream_order_list[0]) + '.shp', str(stream_order_list[1]) + '.shp', str(stream_order_list[2]) + '.shp'], merged_streams)
 elif number_of_items == 4:
-    print "Four streams <= order 4"
+    print "Four streams <= " + str(desired_stream_orders)
     arcpy.Merge_management([str(stream_order_list[0]) + '.shp', str(stream_order_list[1]) + '.shp', str(stream_order_list[2]) + '.shp', str(stream_order_list[3]) + '.shp'], merged_streams)
 
 diss_merge = os.path.join(root_dir, filename[0:3] + 'm' + 'ds' + ".shp") # This will just be a temporary file.
