@@ -22,14 +22,17 @@ import sys
 arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
-# Local variables:
+#Set working directories.
+root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
+out_folder = r"C:\PhD\junk"
+
+################################################################################
 #Set sub-catchments file and corresponding DEM.
-input_catchments = "C:\PhD\junk\Mary_subcatchments_mgaz56.shp"
+area = 'Mary_subcatchments_mgaz56.shp'
+input_catchments = os.path.join(root_dir, area)
 target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas" #Short for basin.
 filename = 'qldord'
-root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
-out_folder = r"C:\PhD\junk"
 DEM = os.path.join(root_dir, filename)
 min_ord = 4; # This is the value <= that I want to define small streams as.
 
@@ -64,7 +67,7 @@ for row in cursor:
     if row[4] == target_basin:
         FID_val = row[0]
         arcpy.SelectLayerByAttribute_management(bas, "NEW_SELECTION", "\"FID\" = " + str(FID_val))
-        arcpy.FeatureClassToFeatureClass_conversion (bas, out_folder, "area" + str(FID_val))#. Use this to save all of the shape files.
+        arcpy.FeatureClassToFeatureClass_conversion (bas, out_folder, "area" + str(FID_val))#. Use this to save all of the shapefiles.
         area_shape = os.path.join(out_folder, "area" + str(FID_val) + '.shp')
         print area_shape
         left, bottom, right, top, width, height = extents(area_shape)
@@ -73,7 +76,6 @@ for row in cursor:
         print new
         extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
         arcpy.Clip_management(DEM, extent, new, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
-        print new
         in_raster = os.path.join(root_dir, new) # This should be a clipped shape from the large stream order raster.
         ################################################################################
 #Syntax for extracting extent of raster.
@@ -134,12 +136,26 @@ for row in cursor:
             arcpy.gp.Con_sa(in_raster, Input_true_raster_or_constant_value, output, "", "\"VALUE\" =" + str(item))
             diss_shp = in_raster + str(item) + "_ds"#Output for dissolve operator below.
             init_shp = os.path.join(out_folder, 'init' + str(item) + ".shp")  # This will just be a temporary file.
-            expand_raster = in_raster + str(item)  + 'exp'#Output for expand operator below.
-            # Expand (in_raster, number_cells, zone_values)
-            arcpy.gp.Expand_sa(output, expand_raster,  '1', "1")
-            # Process: Raster to Polygon
-            arcpy.RasterToPolygon_conversion(expand_raster, init_shp, "SIMPLIFY", "VALUE")
-            # Process: Dissolve
+            expand_raster = os.path.join(root_dir, 'exp' + filename + str(item))#Output for expand operator below.
+            print 'Going into expand loop...';
+            ################################################################################
+            for i in range(0, item):
+                print 'Sleeping for 5 seconds...'; time.sleep(5)
+                print 'expand number: ' + str(i)
+                if i == 0: #For the first loop iteration, the file to be expanded will just be the input stream order file (or one stream order from that file).
+                    input_expand = output #This is the file created by the Con statement above.
+                    print input_expand + ' - for value: ' + str(i);
+                    output_expand = os.path.join(root_dir, expand_raster + str(i))#Name the expanded raster to be created.
+                    arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")#Create the expanded raster.
+                elif i > 0:
+                    input_expand = os.path.join(root_dir, expand_raster + str(i - 1))
+                    print input_expand + ' - for value: ' + str(i)
+                    output_expand = os.path.join(root_dir, expand_raster + str(i))
+                    print output_expand + ' - for value: ' + str(i)
+                    arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")
+
+            ################################################################################
+            arcpy.RasterToPolygon_conversion(output_expand, init_shp, "SIMPLIFY", "VALUE")
             arcpy.Dissolve_management(init_shp, diss_shp, "", "", "MULTI_PART", "DISSOLVE_LINES")
             stream_order_list.append(diss_shp)#Creating a list to use for into into megre operator below.
             arcpy.Delete_management(output)
@@ -180,16 +196,26 @@ for row in cursor:
 
 ################################################################################
 #Clean up unwanted data.
-#os.chdir(root_dir)
-#for (dirpath, dirnames, filenames) in os.walk('.'):
-#    for file in filenames:
-#        if file[-7:-4] == '_ds':
-#            print "This file will be deleted " + str(file)
-#            arcpy.Delete_management(file)
+root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
+for (dirpath, dirnames, filenames) in os.walk('.'):
+    for file in filenames:
+        if file.startswith('exp'):
+            print "This file will be deleted " + str(file)
+            #arcpy.Delete_management(file)
+
+root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
+for (dirpath, dirnames, filenames) in os.walk('.'):
+    for dir in dirnames:
+        if dir[:3] == 'exp':
+            print dir
+            print "This directory will be deleted " + str(dir)
+            arcpy.Delete_management(dir)
 
 arcpy.Delete_management(LessThan)
 arcpy.Delete_management(Times)
 arcpy.Delete_management(SetNull)
+arcpy.Delete_management(in_diss)
+arcpy.Delete_management(conv)
 
 ################################################################################
 #Time taken.

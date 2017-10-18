@@ -16,14 +16,14 @@ t0 = time.time()
 
 ################################################################################
 #Set directories.
-root = r"X:\PhD\junk"; os.chdir(root)
-out = r"X:\PhD\junk"
+root = r"C:\PhD\junk"; os.chdir(root)
+out = r"C:\PhD\junk"
 
 ################################################################################
 #Set sub-catchments file and corresponding DEM.
-dem_file = 'mary_5m'
+dem_file = 'qldz56.tif'
 DEM = os.path.join(root, dem_file)
-landsat_files = r"X:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
+landsat_files = r"C:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
 catchments_shape = 'Mary_subcatchments_mgaz56.shp'
 input_catchments = os.path.join(root, catchments_shape)
 target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
