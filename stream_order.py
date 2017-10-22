@@ -20,21 +20,21 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set the working directory.
-root_dir = (r'C:\\PhD\\junk')
-out = (r'C:\\PhD\\junk')
+root_dir = (r'X:\\PhD\\junk')
+out_folder = "X:\\PhD\\junk"
 os.chdir(root_dir)
 ################################################################################
 # Local variables:
 target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas"
-dem_file = "qldz56.tif"
+dem_file = "mary_5m"
 dem = os.path.join(root_dir, dem_file)
-out_folder = "C:\\PhD\\junk"
 catchments_shape = 'Mary_subcatchments_mgaz56.shp'
 input_catchments = os.path.join(root_dir, catchments_shape)
 os.chdir(root_dir)
 Statistics_type = "MINIMUM"
 expand = "2"
+flow_acc_value = 1000
 
 ################################################################################
 #Function for extracting extent from shapefiles.
@@ -67,7 +67,7 @@ for row in cursor:
         FID_val = row[0]
         arcpy.SelectLayerByAttribute_management(bas, "NEW_SELECTION", "\"FID\" = " + str(FID_val))
         arcpy.FeatureClassToFeatureClass_conversion (bas, out_folder, "area" + str(FID_val)) #. Use this to save all of the shape files.
-        area_shape = os.path.join(out, "area" + str(FID_val) + '.shp')
+        area_shape = os.path.join(out_folder, "area" + str(FID_val) + '.shp')
         print area_shape
         left, bottom, right, top, width, height = extents(area_shape)
         print (left, bottom, right, top, width, height)
@@ -104,7 +104,7 @@ for row in cursor:
         arcpy.gp.FlowDirection_sa(fill_dem, flow_dir, "NORMAL", Output_drop_raster); print 'flow direction works'
         arcpy.gp.FlowAccumulation_sa(flow_dir, flow_acc, "", "FLOAT"); print 'flow accumulation works'
         flow_acc_rast = arcpy.Raster(flow_acc); print 'flow accumulation raster saved'
-        strms  = Con(flow_acc_rast >= 1000,1,0); print 'Raster calculator for streams => 1000 works'
+        strms  = Con(flow_acc_rast >= flow_acc_value,1,0); print 'Raster calculator for streams => 1000 works'
         stream = strms.save(streams); print 'stream raster saved'
         arcpy.gp.StreamOrder_sa(streams, flow_dir, stream_order, Method_of_stream_ordering); print 'stream orders work'
         stream_ord_rast = arcpy.Raster(stream_order); print 'stream order raster saved'
