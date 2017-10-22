@@ -25,7 +25,7 @@ os.chdir(root_dir)
 
 ################################################################################
 # Local variables:
-filename = 'filf'
+filename = 'wean1m'
 in_rast = os.path.join(root_dir, filename) # provide a default value if unspecified
 shape = 'Rectangle ' #Name desired shape exactly with one space before closing quotes.
 units = 'CELL' # or 'MAP', no space after
@@ -101,12 +101,12 @@ for i in range(1,range_len):
 ################################################################################
 #Clean up unwanted files.
 arcpy.Delete_management(new_m)
-#arcpy.Delete_management(new_s)
+arcpy.Delete_management(new_s)
 
-#arcpy.Delete_management(outName_stdev)
-#arcpy.Delete_management(outName_mean)
-#arcpy.Delete_management(final_mean)
-#arcpy.Delete_management(final_std)
+arcpy.Delete_management(outName_stdev)
+arcpy.Delete_management(outName_mean)
+arcpy.Delete_management(final_mean)
+arcpy.Delete_management(final_std)
 
 ################################################################################
 

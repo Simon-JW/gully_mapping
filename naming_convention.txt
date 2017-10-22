@@ -32,3 +32,5 @@ lge == Large.
 
 sml == Small.
 
+sc == Scaled.
+
