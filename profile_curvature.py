@@ -6,7 +6,6 @@
 # Usage: profile_curvature <curve> <pro_curve> <plan_curve> <Input_raster_or_constant_value_2> <Input_raster_or_constant_value_2__2_> <pprocurve> <nprocurve> <Z_factor>
 # Description:
 # ---------------------------------------------------------------------------
-
 # Import arcpy module
 import arcpy
 import os
@@ -18,47 +17,68 @@ import sys
 arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
-#Basic inputs and outputs.
-DEM = "C:\\PhD\\junk\\ary_463" #Input DEM.
+#Set working directory.
+root_dir = (r'C:\\PhD\\junk')#Set the working directory.
+os.chdir(root_dir)
 
 ################################################################################
-#Outputs.
-curve = "C:\\PhD\\junk\\curve" #Output curvature raster.
-pro_curve = "C:\\PhD\\junk\\pro_curve"#Output profile curvature raster.
-pprocurve = "C:\\PhD\\junk\\pprocurve"#p==positive and corresponds to max, above.
-nprocurve = "C:\\PhD\\junk\\nprocurve"#n==negative and corresponds to min, above.
-p_plus_n = "C:\\PhD\\junk\\p_plus_n"#Combining max and min filtered rasters.
-filtprocurve = "C:\\PhD\\junk\\filtprocurve"
-inverse = "C:\\PhD\\junk\\inverse"
-nullprocurve = "C:\\PhD\\junk\\nullprocurve"
+#Basic inputs and outputs.
+filename = 'wean1m'
+DEM = os.path.join(root_dir,  filename) #Input DEM.
 
 ################################################################################
 #Adjustable parameters.
-minprocurve = "-3.0"#Minimum.
-maxprocurve = "3.0"#Maximum.
-Z_factor = "1"
 
-################################################################################
-#Fixed values.
-invert = "1"
-nullvalue = "1"
+Z_factor = "1"
+range_len = 2 #This is the numer of times you want the loop to iterate through
+                #different window sizes. Because Python indexes from 0, the
+                #number of files you create will always be 1 less than this value.
+minprocurve = -1
+maxprocurve = 1
 
 ################################################################################
 #Main program.
-arcpy.gp.Curvature_sa(DEM, curve, Z_factor, pro_curve)
-arcpy.gp.GreaterThanEqual_sa(pro_curve, maxprocurve, pprocurve)
-arcpy.gp.LessThanEqual_sa(pro_curve, minprocurve, nprocurve)
-arcpy.gp.Plus_sa(pprocurve, nprocurve, p_plus_n)
-arcpy.gp.Times_sa(p_plus_n, pro_curve, filtprocurve)
-arcpy.gp.Minus_sa(invert, p_plus_n, inverse)
-arcpy.gp.SetNull_sa(inverse, nullvalue, nullprocurve, "")
+for i in range(1,range_len):
+    print 'profile curvature ' + '+-' + str(i)
+    min = str(i * minprocurve)#Minimum.
+    max = str(i * maxprocurve)#Maximum.
+    base = 'curvature' + str(i)
+    curve = os.path.join(root_dir, base) #Input DEM.
+    pro_curve = os.path.join(root_dir, 'pro' + base[:3] + str(i))#Output profile curvature raster.
+    pprocurve = os.path.join(root_dir, 'p' + 'pro' + base[:3] + str(i))#p==positive and corresponds to max, above.
+    mpprocurve = os.path.join(root_dir, 'm' + 'p' + 'pro' + base[:3] + str(i))
+    nprocurve = os.path.join(root_dir, 'n' + 'pro' + base[:3] + str(i))#n==negative and corresponds to min, above.
+    mnprocurve = os.path.join(root_dir, 'm' + 'n' + 'pro' + base[:3] + str(i))
+    p_plus_n = os.path.join(root_dir, 'n' + 'p' + 'pro' + base[:3] + str(i))#Combining max and min filtered rasters.
+    filtprocurve = os.path.join(root_dir, 'filt' + 'pro' + base[:3] + str(i))
+    inverse = os.path.join(root_dir, 'inv' + 'pro' + base[:3] + str(i))
+    #nullprocurve = os.path.join(root_dir, 'null' + 'pro' + base[:3])
+    pfiltprocurve = os.path.join(root_dir, 'p' + 'filt' + 'pro' + base[:3] + str(i))
+    scaled_procurve = os.path.join(root_dir, 'sc' + 'pro' + base[:3] + str(i))
+    arcpy.gp.Curvature_sa(DEM, curve, Z_factor, pro_curve); time.sleep(2)
+    arcpy.gp.GreaterThanEqual_sa(pro_curve, max, pprocurve); time.sleep(2)
+    arcpy.gp.Times_sa(pprocurve, max, mpprocurve);time.sleep(2)
+    arcpy.gp.LessThanEqual_sa(pro_curve, min, nprocurve);time.sleep(2)
+    arcpy.gp.Times_sa(nprocurve, min, mnprocurve);time.sleep(2)
+    arcpy.gp.Plus_sa(pprocurve, nprocurve, p_plus_n);time.sleep(2)
+    arcpy.gp.Minus_sa("1", p_plus_n, inverse);time.sleep(2)
+    #arcpy.gp.SetNull_sa(inverse, "1", nullprocurve, "")
+    arcpy.gp.Times_sa(inverse, pro_curve, filtprocurve);time.sleep(2)
+    arcpy.gp.Plus_sa(mpprocurve, filtprocurve, pfiltprocurve);time.sleep(2)
+    arcpy.gp.Plus_sa(mnprocurve, pfiltprocurve, scaled_procurve);time.sleep(2)
+    print 'Sleeping for 5 seconds...'
+    time.sleep(5)
+    arcpy.Delete_management(pro_curve, "")
+    arcpy.Delete_management(pprocurve, "")
+    arcpy.Delete_management(nprocurve, "")
+    arcpy.Delete_management(curve, "")
+    arcpy.Delete_management(p_plus_n, "")
+    arcpy.Delete_management(inverse, "")
+    arcpy.Delete_management(mpprocurve, "")
+    arcpy.Delete_management(mnprocurve, "")
+    arcpy.Delete_management(filtprocurve, "")
+    arcpy.Delete_management(pfiltprocurve, "")
 
-################################################################################
-#Clean up redundant files.
-arcpy.Delete_management(pprocurve, "")
-arcpy.Delete_management(nprocurve, "")
-arcpy.Delete_management(curve, "")
-arcpy.Delete_management(inverse, "")
 
 ################################################################################
 print ""
