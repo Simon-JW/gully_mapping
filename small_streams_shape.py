@@ -104,13 +104,13 @@ for row in cursor:
         Pixel_Type = "8_BIT_SIGNED"
         conv = in_raster + 'u' + '.tif'
         arcpy.CopyRaster_management(in_raster, conv, "", "", "-9.990000e+002", "NONE", "NONE", Pixel_Type, "NONE", "NONE", "", "NONE")
-        Input_raster_or_constant_value_2 = "0"
+        #Just check for 0 at this point and if it's 0 then SetNull
+        arcpy.gp.SetNull_sa(conv, "0", conv, "")
         LessThan = os.path.join(out_folder, 'LessThan')
-        Input_false_raster_or_constant_value = "1"
         SetNull = os.path.join(out_folder, 'SetNull')
         Times = os.path.join(out_folder, 'Times')
-        arcpy.gp.LessThan_sa(conv, Input_raster_or_constant_value_2, LessThan)
-        arcpy.gp.SetNull_sa(LessThan, Input_false_raster_or_constant_value, SetNull, "")
+        arcpy.gp.LessThanEqual_sa(conv, "0", LessThan)
+        arcpy.gp.SetNull_sa(LessThan, "1", SetNull, "")
         arcpy.gp.Times_sa(conv, SetNull, Times)
         arcpy.BuildRasterAttributeTable_management(Times, "Overwrite")
         ################################################################################
@@ -142,8 +142,7 @@ for row in cursor:
         for item in min_ord_streams:
             order_value = item; #This is the stream order > that we want to call river.
             output = in_raster + str(item) + '_riv'; #Name of output file to be created.
-            Input_true_raster_or_constant_value = "1"; #What value should the selected range become.
-            arcpy.gp.Con_sa(in_raster, Input_true_raster_or_constant_value, output, "", "\"VALUE\" =" + str(item))
+            arcpy.gp.Con_sa(in_raster, "1", output, "", "\"VALUE\" =" + str(item))
             diss_shp = in_raster + str(item) + "_ds"#Output for dissolve operator below.
             init_shp = os.path.join(out_folder, 'init' + str(item) + ".shp")  # This will just be a temporary file.
             expand_raster = os.path.join(root_dir, 'exp' + filename + str(item))#Output for expand operator below.

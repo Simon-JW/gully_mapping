@@ -33,13 +33,13 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directories.
-root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
-out = r"C:\PhD\junk"
+root_dir = r"X:\PhD\junk"; os.chdir(root_dir)
+out = r"X:\PhD\junk"
+filename = 'marord'
 
 ################################################################################
 # Local variables:
 #Set sub-catchments file and corresponding DEM.
-filename = 'weaord'
 DEM = os.path.join(root_dir, filename)
 LessThan = os.path.join(root_dir, 'LessThan')
 SetNull = os.path.join(root_dir, 'SetNull')
@@ -57,10 +57,10 @@ in_raster = os.path.join(root_dir, DEM) # This should be a clipped shape from th
 Pixel_Type = "8_BIT_SIGNED"
 conv = os.path.join(root_dir, filename + 'u' + '.tif')
 arcpy.CopyRaster_management(in_raster, conv, "", "", "-9.990000e+002", "NONE", "NONE", Pixel_Type, "NONE", "NONE", "", "NONE")
-Input_raster_or_constant_value_2 = "0"
-Input_false_raster_or_constant_value = "1"
-arcpy.gp.LessThan_sa(conv, Input_raster_or_constant_value_2, LessThan)
-arcpy.gp.SetNull_sa(LessThan, Input_false_raster_or_constant_value, SetNull, "")
+#Just check for 0 at this point and if it's 0 then SetNull
+conv = os.path.join(root_dir, filename + 'u' + '.tif')
+arcpy.gp.LessThanEqual_sa(conv, "0", LessThan)
+arcpy.gp.SetNull_sa(LessThan, "1", SetNull, "")
 arcpy.gp.Times_sa(conv, SetNull, Times)
 arcpy.BuildRasterAttributeTable_management(Times, "Overwrite")
 
@@ -84,6 +84,7 @@ stream_orders_present = unique_values(Times, 'VALUE')
 
 min_ord_streams = []
 for stream in stream_orders_present:
+    print stream
     if stream <= desired_stream_orders:
         min_ord_streams.append(stream)
 
@@ -108,7 +109,7 @@ for item in min_ord_streams:
     #when using arcpy. So this just performs expand within a loop, always only
     #expanding by a value of 1 at a time.
 
-    for i in range(0, item):
+    for i in range(0, item + 1):
         print 'Sleeping for 5 seconds...'; time.sleep(5)
         print 'expand number: ' + str(i)
         if i == 0: #For the first loop iteration, the file to be expanded will just be the input stream order file (or one stream order from that file).
@@ -163,14 +164,14 @@ arcpy.Dissolve_management(in_diss, diss_merge, "", "", "MULTI_PART", "DISSOLVE_L
 
 ################################################################################
 #Clean up unwanted data.
-root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
+#root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for file in filenames:
         if file.startswith('exp'):
             print "This file will be deleted " + str(file)
             #arcpy.Delete_management(file)
 
-root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
+#root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for dir in dirnames:
         if dir[:3] == 'exp':

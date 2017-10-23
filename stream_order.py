@@ -108,12 +108,12 @@ for row in cursor:
         stream = strms.save(streams); print 'stream raster saved'
         arcpy.gp.StreamOrder_sa(streams, flow_dir, stream_order, Method_of_stream_ordering); print 'stream orders work'
         stream_ord_rast = arcpy.Raster(stream_order); print 'stream order raster saved'
-        flt_strm_ord = Con(stream_ord_rast >= 5,1,0); print 'stream order >= threshold filtered out'
-        fil_or_st = flt_strm_ord.save(filt_stream_order); print 'filtered stream orders saved'
-        fil_or_st_rast = arcpy.Raster(filt_stream_order);
-        null_strm_ord = SetNull(fil_or_st_rast == 0, fil_or_st_rast)
-        nul_or_st = null_strm_ord.save(null_filt_stream_order); print 'nulled filtered stream orders saved'
-        arcpy.gp.Expand_sa(null_filt_stream_order, expand_filt_streams, expand, "1")
+        #flt_strm_ord = Con(stream_ord_rast >= 5,1,0); print 'stream order >= threshold filtered out'
+        #fil_or_st = flt_strm_ord.save(filt_stream_order); print 'filtered stream orders saved'
+        #fil_or_st_rast = arcpy.Raster(filt_stream_order);
+        #null_strm_ord = SetNull(fil_or_st_rast == 0, fil_or_st_rast)
+        #nul_or_st = null_strm_ord.save(null_filt_stream_order); print 'nulled filtered stream orders saved'
+        #arcpy.gp.Expand_sa(null_filt_stream_order, expand_filt_streams, expand, "1")
 
 ################################################################################
 print ""

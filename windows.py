@@ -20,12 +20,12 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directory.
-root_dir = (r'C:\\PhD\\junk')#Set the working directory.
+root_dir = (r'X:\\PhD\\junk')#Set the working directory.
 os.chdir(root_dir)
 
 ################################################################################
 # Local variables:
-filename = 'wean1m'
+filename = 'mar463'
 in_rast = os.path.join(root_dir, filename) # provide a default value if unspecified
 shape = 'Rectangle ' #Name desired shape exactly with one space before closing quotes.
 units = 'CELL' # or 'MAP', no space after
@@ -37,8 +37,8 @@ Ignore_NoData_in_calculations = "true" #or change to 'false'
 #Set parameters.
 mean_threshold = -0.1 # Highest elevation anomaly to be preserved.
 stdev_threshold = -0.5 # Highest elevation anomaly to be preserved.
-iteration_factor = 10 #This is the value to adjust the window size for each iteration.
-range_len = 5 #This is the numer of times you want the loop to iterate through
+iteration_factor = 5 #This is the value to adjust the window size for each iteration.
+range_len = 3 #This is the numer of times you want the loop to iterate through
                 #different window sizes. Because Python indexes from 0, the
                 #number of files you create will always be 1 less than this value.
 
@@ -85,6 +85,12 @@ for i in range(1,range_len):
     std_thold = arcpy.gp.LessThanEqual_sa(win_mean, mean_threshold, final_std_mask)
     final_std = os.path.join(root_dir, filename[:2] + 'fis'+ str(i*iteration_factor))
     arcpy.gp.Times_sa(final_std_mask, outName_stdev, final_std)
+    arcpy.Delete_management(new_m)
+    arcpy.Delete_management(new_s)
+    arcpy.Delete_management(outName_stdev)
+    arcpy.Delete_management(outName_mean)
+    arcpy.Delete_management(final_mean)
+    arcpy.Delete_management(final_std)
 
 ################################################################################
     #Other optional operations.
@@ -100,13 +106,7 @@ for i in range(1,range_len):
 
 ################################################################################
 #Clean up unwanted files.
-arcpy.Delete_management(new_m)
-arcpy.Delete_management(new_s)
 
-arcpy.Delete_management(outName_stdev)
-arcpy.Delete_management(outName_mean)
-arcpy.Delete_management(final_mean)
-arcpy.Delete_management(final_std)
 
 ################################################################################
 

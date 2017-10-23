@@ -8,6 +8,11 @@
 # Copyright:   (c) Simon Walker 2017
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
+
+#Inputs
+# 'area' variable requires shapefile with name >= 3 charaters (not including '.shp').
+
+
 import arcpy
 import os
 from arcpy import env
@@ -19,17 +24,17 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set the working directory.
-root_dir = (r'C:\\PhD\\junk')
+root_dir = (r'X:\\PhD\\junk')
 os.chdir(root_dir)
-out_folder = (r'C:\\PhD\\junk')
+out_folder = (r'X:\\PhD\\junk')
 
 ################################################################################
 # Local variables:
-area = 'weany_ck.shp'
+area = 'test.shp'
 input_catchments = os.path.join(root_dir, area)
 target_basin = 0 #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas"
-dem_file = 'wean1m'
+dem_file = 'mary_5m'
 dem = os.path.join(root_dir, dem_file)
 Statistics_type = "MINIMUM"
 flowdir = os.path.join(root_dir, dem_file[:3] + 'fdir')
