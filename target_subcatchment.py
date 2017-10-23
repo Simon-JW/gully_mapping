@@ -13,19 +13,27 @@ import arcpy
 import os
 import time
 t0 = time.time()
+################################################################################
+#Take ~1-2 mins per sub-catchment.
+
+#Requires:
+
+#Creates:
+
 
 ################################################################################
 #Set directories.
-root = r"X:\PhD\junk"; os.chdir(root)
-out = r"X:\PhD\junk"
+drive = 'X'
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
+out_folder = drive + ":\PhD\junk"
 
 ################################################################################
 #Set sub-catchments file and corresponding DEM.
 dem_file = 'mary_5m'
-DEM = os.path.join(root, dem_file)
+DEM = os.path.join(root_dir, dem_file)
 landsat_files = r"X:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
 catchments_shape = 'Mary_subcatchments_mgaz56.shp'
-input_catchments = os.path.join(root, catchments_shape)
+input_catchments = os.path.join(root_dir, catchments_shape)
 target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas" #Short for basin. Is the name of the feature layer created by arcpy.MakeFeatureLayer_management below.
 
@@ -60,12 +68,12 @@ for row in cursor:
     if row[4] == target_basin:
         FID_val = row[0]
         arcpy.SelectLayerByAttribute_management(bas, "NEW_SELECTION", "\"FID\" = " + str(FID_val))
-        arcpy.FeatureClassToFeatureClass_conversion (bas, out, "area" + str(FID_val)) #. Use this to save all of the shape files.
-        area_shape = os.path.join(out, "area" + str(FID_val) + '.shp')
+        arcpy.FeatureClassToFeatureClass_conversion (bas, out_folder, "area" + str(FID_val)) #. Use this to save all of the shape files.
+        area_shape = os.path.join(out_folder, "area" + str(FID_val) + '.shp')
         print area_shape
         left, bottom, right, top, width, height = extents(area_shape)
         print (left, bottom, right, top, width, height)
-        new = os.path.join(out, dem_file[:3] + target_basin[4:])
+        new = os.path.join(out_folder, dem_file[:3] + target_basin[4:])
         extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
         arcpy.Clip_management(DEM, extent, new, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
         print new
@@ -85,9 +93,9 @@ for row in cursor:
 band_1 = 'B4'
 band_2 = 'B5'
 band_3 = 'B6'
-rgb_inputs = os.path.join(out, dem_file[:3] + '_' + band_1 + '.tif') +';' + os.path.join(out, dem_file[:3] + '_' + band_2 + '.tif') + ';' + os.path.join(out, dem_file[:3] + '_' + band_3 + '.tif')
+rgb_inputs = os.path.join(out_folder, dem_file[:3] + '_' + band_1 + '.tif') +';' + os.path.join(out_folder, dem_file[:3] + '_' + band_2 + '.tif') + ';' + os.path.join(out, dem_file[:3] + '_' + band_3 + '.tif')
 rgb_out = dem_file[:3] + '_' + str(band_1[-1:]) + str(band_2[-1:]) + str(band_3[-1:]) + '.tif'
-rgb_file = os.path.join(out, rgb_out)
+rgb_file = os.path.join(out_folder, rgb_out)
 #landsat_files = r"C:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
 os.chdir(landsat_files)
 
@@ -96,7 +104,7 @@ os.chdir(landsat_files)
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for file in filenames:
         if file.endswith('.tif'):
-            new_rgb = os.path.join(out, dem_file[:3] + file[-7:])
+            new_rgb = os.path.join(out_folder, dem_file[:3] + file[-7:])
             extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
             arcpy.Clip_management(file, extent, new_rgb, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
             print new_rgb
@@ -113,7 +121,7 @@ arcpy.CompositeBands_management(rgb_inputs, rgb_file)
 
 ################################################################################
 #Clean up unwanted files.
-os.chdir(root)
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 #Delete clipped Landsat bands used to create 456 image.
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for file in filenames:

@@ -11,14 +11,14 @@
 #Take ~1-2 mins per sub-catchment.
 
 #Requires:
-# 1. Stream order raster for target area or broader area (it will be clipped by the shape of the target catchment in either case).
+# 1. Stream order raster (background of NoData) for target area or broader area (it will be clipped by the shape of the target catchment in either case).
 # 2. Shapefile with multiple sub-catchments that can be selected individually.
 
 #Creates:
 # 1. Clipped DEM of target catchment.
 # 2. Clipped shape of target area named according to FID of that shape.
 # 3. One shapefile for each stream order <= target stream order.
-# 4. One shapefile combining all speerate stream order shapefiles.
+# 4. One shapefile combining all separate stream order shapefiles.
 
 ################################################################################
 # Import arcpy module
@@ -33,8 +33,9 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directories.
-root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
-out_folder = r"C:\PhD\junk"
+drive = 'X'
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
+out_folder = drive + ":\PhD\junk"
 
 ################################################################################
 #Set sub-catchments file and corresponding DEM.
@@ -102,10 +103,8 @@ for row in cursor:
         #an attribute table and can only build and attribute table on single band
         #8-bit file.
         Pixel_Type = "8_BIT_SIGNED"
-        conv = in_raster + 'u' + '.tif'
+        conv = os.path.join(root_dir, filename + 'u' + '.tif')
         arcpy.CopyRaster_management(in_raster, conv, "", "", "-9.990000e+002", "NONE", "NONE", Pixel_Type, "NONE", "NONE", "", "NONE")
-        #Just check for 0 at this point and if it's 0 then SetNull
-        arcpy.gp.SetNull_sa(conv, "0", conv, "")
         LessThan = os.path.join(out_folder, 'LessThan')
         SetNull = os.path.join(out_folder, 'SetNull')
         Times = os.path.join(out_folder, 'Times')
@@ -124,7 +123,7 @@ for row in cursor:
 
         ################################################################################
         #Find all unique stream order values and create a new list containing only
-        #those values > min_ord.
+        #those values <= min_ord.
         def unique_values(table, field):
             with arcpy.da.SearchCursor(table, [field]) as cursor:
                 return sorted({row[0] for row in cursor})
@@ -172,8 +171,8 @@ for row in cursor:
             arcpy.Delete_management(init_shp)
 
         ################################################################################
-        #Figure out whether there are streams > order 4 for the target area. If so how many
-        #different orders exist > min_ord.
+        #Figure out whether there are streams <= desired minimum order for the target area. If so how many
+        #different orders exist <= min_ord.
         for item in stream_order_list:
             print item
             number_of_items = len(stream_order_list)
@@ -183,9 +182,7 @@ for row in cursor:
         merged_streams = os.path.join(root_dir, filename[0:3] + 'm') #Output for merge operator below.
         print merged_streams
 
-        #Can use the oder value to only merge correct streams i.e. 5 & 8 or 6 & 8 etc.
-
-        #Select the correct arrangement based on number of streams > order 4
+        #Select the correct arrangement based on number of streams <= desired stream order.
         if number_of_items == 1:
             print "Only one stream <= " + str(min_ord)
             arcpy.Merge_management([str(stream_order_list[0]) + '.shp'], merged_streams)
@@ -205,14 +202,14 @@ for row in cursor:
 
 ################################################################################
 #Clean up unwanted data.
-root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for file in filenames:
         if file.startswith('exp'):
             print "This file will be deleted " + str(file)
             #arcpy.Delete_management(file)
 
-root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for dir in dirnames:
         if dir[:3] == 'exp':

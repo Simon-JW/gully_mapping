@@ -11,7 +11,7 @@
 #Take ~10-15 seconds per sub-catchment.
 
 #Requires:
-# 1. Stream order raster for target area.
+# 1. Stream order raster (background of NoData) for target area.
 
 #Creates:
 # 1. Clipped DEM of target catchment.
@@ -33,14 +33,14 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directories.
-root_dir = r"X:\PhD\junk"; os.chdir(root_dir)
-out = r"X:\PhD\junk"
+drive = 'X'
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
+out_folder = drive + ":\PhD\junk"
 filename = 'marord'
 
 ################################################################################
 # Local variables:
 #Set sub-catchments file and corresponding DEM.
-DEM = os.path.join(root_dir, filename)
 LessThan = os.path.join(root_dir, 'LessThan')
 SetNull = os.path.join(root_dir, 'SetNull')
 Times = os.path.join(root_dir, 'Times')
@@ -48,7 +48,8 @@ desired_stream_orders = 2 # This is then number <= the stream order of interest.
 
 ################################################################################
 #arcpy.FeatureClassToFeatureClass_conversion (catchments, out, "W")
-in_raster = os.path.join(root_dir, DEM) # This should be a clipped shape from the large stream order raster.
+in_raster = os.path.join(root_dir, filename) # This should be a clipped shape from the large stream order raster.
+print in_raster
 
 ################################################################################
 #This part is required because the function below needs the raster to have
@@ -57,7 +58,6 @@ in_raster = os.path.join(root_dir, DEM) # This should be a clipped shape from th
 Pixel_Type = "8_BIT_SIGNED"
 conv = os.path.join(root_dir, filename + 'u' + '.tif')
 arcpy.CopyRaster_management(in_raster, conv, "", "", "-9.990000e+002", "NONE", "NONE", Pixel_Type, "NONE", "NONE", "", "NONE")
-#Just check for 0 at this point and if it's 0 then SetNull
 conv = os.path.join(root_dir, filename + 'u' + '.tif')
 arcpy.gp.LessThanEqual_sa(conv, "0", LessThan)
 arcpy.gp.SetNull_sa(LessThan, "1", SetNull, "")
@@ -75,7 +75,7 @@ if smallest_stream > desired_stream_orders:
 
 ################################################################################
 #Find all unique stream order values and create a new list containing only
-#those values > 4.
+#those values <= desired stream order.
 def unique_values(table, field):
     with arcpy.da.SearchCursor(table, [field]) as cursor:
         return sorted({row[0] for row in cursor})
@@ -98,8 +98,7 @@ for item in min_ord_streams:
     #arcpy.env.scratchWorkspace = os.path.join(root_dir, 'junk.gdb')
     order_value = item; #This is the stream order > that we want to call river.
     output = os.path.join(root_dir, filename + str(item) + '_riv'); #Name of output file to be created.
-    Input_true_raster_or_constant_value = "1"; #What value should the selected range become.
-    arcpy.gp.Con_sa(in_raster, Input_true_raster_or_constant_value, output, "", "\"VALUE\" =" + str(item))
+    arcpy.gp.Con_sa(in_raster, "1", output, "", "\"VALUE\" =" + str(item))
     diss_shp =  os.path.join(root_dir, filename + str(item) + "_ds") #Output for dissolve operator below.
     init_shp = os.path.join(root_dir, 'init' + str(item) + ".shp")  # This will just be a temporary file.
     expand_raster = os.path.join(root_dir, 'exp' + filename + str(item))#Output for expand operator below.
@@ -131,8 +130,8 @@ for item in min_ord_streams:
     arcpy.Delete_management(init_shp)
 
 ################################################################################
-#Figure out whether there are streams > order 4 for the target area. If so how many
-#different orders exist > 4.
+#Figure out whether there are streams <= desired order for the target area. If so how many
+#different orders exist <= desired order.
 for item in stream_order_list:
     print item
     number_of_items = len(stream_order_list)
@@ -142,9 +141,7 @@ print str(number_of_items) + ' different stream classes.'
 merged_streams = os.path.join(root_dir, filename[0:3] + 'm') #Output for merge operator below.
 print merged_streams
 
-#Can use the oder value to only merge correct streams i.e. 5 & 8 or 6 & 8 etc.
-
-#Select the correct arrangement based on number of streams > order 4
+#Select the correct arrangement based on number of streams <= desired order.
 if number_of_items == 1:
     print "Only one stream <= " + str(desired_stream_orders)
     arcpy.Merge_management([str(stream_order_list[0]) + '.shp'], merged_streams)
@@ -164,14 +161,14 @@ arcpy.Dissolve_management(in_diss, diss_merge, "", "", "MULTI_PART", "DISSOLVE_L
 
 ################################################################################
 #Clean up unwanted data.
-#root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for file in filenames:
         if file.startswith('exp'):
             print "This file will be deleted " + str(file)
             #arcpy.Delete_management(file)
 
-#root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for dir in dirnames:
         if dir[:3] == 'exp':

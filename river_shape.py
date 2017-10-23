@@ -21,9 +21,9 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directories.
-root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
-out_folder = r"C:\PhD\junk"
-
+drive = 'X'
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
+out_folder = drive + ":\PhD\junk"
 ################################################################################
 #Set sub-catchments file and corresponding DEM.
 area = 'Mary_subcatchments_mgaz56.shp'
@@ -32,7 +32,6 @@ target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string
 bas = "bas" #Short for basin.
 dem_file = 'qldord'
 DEM = os.path.join(root_dir, dem_file)
-
 
 ################################################################################
 #Function for extracting extents of shapes for defining clipping geometry.

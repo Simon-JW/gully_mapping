@@ -6,7 +6,15 @@
 # Usage: windows <fitz_f12_tif> <Foc_test>
 # Description:
 # ---------------------------------------------------------------------------
+################################################################################
+#Take ~1-2 mins per sub-catchment.
 
+#Requires:
+
+#Creates:
+
+
+################################################################################
 # Imports
 import arcpy
 from arcpy import env
@@ -15,13 +23,13 @@ from arcpy.sa import *
 import os
 import time; t0 = time.time()
 import sys
-
 arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directory.
-root_dir = (r'X:\\PhD\\junk')#Set the working directory.
-os.chdir(root_dir)
+drive = 'X'
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
+out_folder = drive + ":\PhD\junk"
 
 ################################################################################
 # Local variables:
@@ -31,14 +39,13 @@ shape = 'Rectangle ' #Name desired shape exactly with one space before closing q
 units = 'CELL' # or 'MAP', no space after
 mean = "MEAN" #Can be any of the acceptable operations depending on data type (float or int)
 standard_deviation = "STD"
-Ignore_NoData_in_calculations = "true" #or change to 'false'
 
 ################################################################################
 #Set parameters.
 mean_threshold = -0.1 # Highest elevation anomaly to be preserved.
 stdev_threshold = -0.5 # Highest elevation anomaly to be preserved.
 iteration_factor = 5 #This is the value to adjust the window size for each iteration.
-range_len = 3 #This is the numer of times you want the loop to iterate through
+range_len = 2 #This is the numer of times you want the loop to iterate through
                 #different window sizes. Because Python indexes from 0, the
                 #number of files you create will always be 1 less than this value.
 
@@ -46,13 +53,8 @@ range_len = 3 #This is the numer of times you want the loop to iterate through
 
 #Main program.
 for i in range(1,range_len):
-    in_height = i * iteration_factor #Specify window height.
-    h = str(in_height)#Convert to string for ArcGIS.
-    height = h + ' '
-    in_width = i * iteration_factor #Specify window width.
-    w = str(in_width)#Convert to string for ArcGIS.
-    width = w + ' '
-    #env.workspace = root_dir
+    height = str(i * iteration_factor) + ' '
+    width = str(i * iteration_factor) + ' '
     ############################################################################
     #Window mean.
     mean_out = filename[:2] + '_' + 'm' + '_'  + str(i*iteration_factor)#
@@ -61,36 +63,39 @@ for i in range(1,range_len):
     print ('Window specifications', Neighborhood)
     print ('mean raster', new_m)
     # Process: Focal Statistics
-    arcpy.gp.FocalStatistics_sa(in_rast, new_m, Neighborhood, mean, Ignore_NoData_in_calculations)
+    arcpy.gp.FocalStatistics_sa(in_rast, new_m, Neighborhood, mean, "true")
     outName_mean = os.path.join(root_dir, mean_out + 'anom')
-    print in_rast
-    print new_m
-    print outName_mean
     time.sleep(5); print 'sleeping for 5 seconds'
     win_mean = arcpy.gp.Minus_sa(in_rast, new_m, outName_mean)
     final_mean_mask = os.path.join(root_dir, filename[:2] + 'mmask' + str(i*iteration_factor))
     mean_thold= arcpy.gp.LessThanEqual_sa(win_mean, mean_threshold, final_mean_mask)
     final_mean = os.path.join(root_dir, filename[:2] + 'fim'+ str(i*iteration_factor))
     arcpy.gp.Times_sa(final_mean_mask, outName_mean, final_mean)
+
     ############################################################################
     #Window standarised anomalies.
     stdev_out = filename[:2] + '_' + 's' + '_'  + str(i*iteration_factor)
     new_s = os.path.join(root_dir,stdev_out)
     print ('standard deviation raster', new_s)
     # Process: Focal Statistics
-    arcpy.gp.FocalStatistics_sa(in_rast, new_s, Neighborhood, standard_deviation, Ignore_NoData_in_calculations)
+    arcpy.gp.FocalStatistics_sa(in_rast, new_s, Neighborhood, standard_deviation, "true")
     outName_stdev = os.path.join(root_dir, stdev_out + '_r')
+    time.sleep(5); print 'sleeping for 5 seconds'
     win_std = arcpy.gp.Divide_sa(win_mean, new_s, outName_stdev)
     final_std_mask = os.path.join(root_dir, filename[:2] + 'smask'+ str(i*iteration_factor))
     std_thold = arcpy.gp.LessThanEqual_sa(win_mean, mean_threshold, final_std_mask)
     final_std = os.path.join(root_dir, filename[:2] + 'fis'+ str(i*iteration_factor))
     arcpy.gp.Times_sa(final_std_mask, outName_stdev, final_std)
-    arcpy.Delete_management(new_m)
+    ################################################################################
+    #Clean up unwanted standardised anomaly files.
     arcpy.Delete_management(new_s)
     arcpy.Delete_management(outName_stdev)
+    #arcpy.Delete_management(final_std)
+    ################################################################################
+    #Clean up unwanted anomaly files.
+    arcpy.Delete_management(new_m)
     arcpy.Delete_management(outName_mean)
-    arcpy.Delete_management(final_mean)
-    arcpy.Delete_management(final_std)
+    #arcpy.Delete_management(final_mean)
 
 ################################################################################
     #Other optional operations.
@@ -103,10 +108,6 @@ for i in range(1,range_len):
     #mask_stdev = os.path.join(root_dir, in_rast[-6:] + 'b_s'+ str(i))
     #bool_m.save(mask_mean)
     #bool_s.save(mask_stdev)
-
-################################################################################
-#Clean up unwanted files.
-
 
 ################################################################################
 

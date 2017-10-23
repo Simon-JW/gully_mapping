@@ -6,7 +6,22 @@
 # Usage: stream_order <Expand_raste1> <rastercalc1> <StreamO_rast1> <rastercalc> <Output_accumulation_raster> <Output_flow_direction_raster> <Fill_don_501> <don_50>
 # Description:
 # ---------------------------------------------------------------------------
+################################################################################
+#Take ~1-2 mins per sub-catchment.
 
+#Requires:
+# 1. Shapefile with multiple sub-catchments that can be selected individually.
+# 2. DEM covering extent of all catchments in shapefile.
+
+#Creates:
+# 1. Stream order raster with background of NoData.
+# 2. New DEM clipped to area of target sub-catchment.
+
+#Note: other components are created in the process of delineating streams and
+#then deleted at thye bottom. The delete row can be hashtagged out to keep a given
+#file if required.
+
+################################################################################
 #Imports.
 
 import arcpy
@@ -20,21 +35,18 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set the working directory.
-root_dir = (r'X:\\PhD\\junk')
-out_folder = "X:\\PhD\\junk"
-os.chdir(root_dir)
+drive = 'X'
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
+out_folder = drive + ":\PhD\junk"
 ################################################################################
 # Local variables:
-target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
-bas = "bas"
 dem_file = "mary_5m"
-dem = os.path.join(root_dir, dem_file)
 catchments_shape = 'Mary_subcatchments_mgaz56.shp'
-input_catchments = os.path.join(root_dir, catchments_shape)
-os.chdir(root_dir)
-Statistics_type = "MINIMUM"
-expand = "2"
+target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
 flow_acc_value = 1000
+bas = "bas"
+dem = os.path.join(root_dir, dem_file)
+input_catchments = os.path.join(root_dir, catchments_shape)
 
 ################################################################################
 #Function for extracting extent from shapefiles.
@@ -74,7 +86,6 @@ for row in cursor:
         new = os.path.join(out_folder, dem_file[:3] + target_basin[4:])
         extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
         arcpy.Clip_management(dem, extent, new, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
-        #print new
         print new
         ################################################################################
         #Syntax for taking extents of rasters.
@@ -87,8 +98,6 @@ for row in cursor:
         #bottom = int(dem_raster.extent.YMin)
         ################################################################################
         input_dem = new # provide a default value if unspecified
-        Output_drop_raster = ""
-        Method_of_stream_ordering = "STRAHLER"
         fill_dem = os.path.join(root_dir, dem_file[:3] + 'f')
         flow_dir = os.path.join(root_dir, dem_file[:3] +'dir')
         flow_acc = os.path.join(root_dir, dem_file[:3] +'fa')
@@ -101,19 +110,28 @@ for row in cursor:
         ################################################################################
 
         arcpy.gp.Fill_sa(input_dem, fill_dem, ""); print 'fill works'
-        arcpy.gp.FlowDirection_sa(fill_dem, flow_dir, "NORMAL", Output_drop_raster); print 'flow direction works'
+        arcpy.gp.FlowDirection_sa(fill_dem, flow_dir, "NORMAL", ""); print 'flow direction works'
         arcpy.gp.FlowAccumulation_sa(flow_dir, flow_acc, "", "FLOAT"); print 'flow accumulation works'
         flow_acc_rast = arcpy.Raster(flow_acc); print 'flow accumulation raster saved'
         strms  = Con(flow_acc_rast >= flow_acc_value,1,0); print 'Raster calculator for streams => 1000 works'
         stream = strms.save(streams); print 'stream raster saved'
-        arcpy.gp.StreamOrder_sa(streams, flow_dir, stream_order, Method_of_stream_ordering); print 'stream orders work'
+        arcpy.gp.StreamOrder_sa(streams, flow_dir, stream_order, "STRAHLER"); print 'stream orders work'
         stream_ord_rast = arcpy.Raster(stream_order); print 'stream order raster saved'
         #flt_strm_ord = Con(stream_ord_rast >= 5,1,0); print 'stream order >= threshold filtered out'
         #fil_or_st = flt_strm_ord.save(filt_stream_order); print 'filtered stream orders saved'
         #fil_or_st_rast = arcpy.Raster(filt_stream_order);
         #null_strm_ord = SetNull(fil_or_st_rast == 0, fil_or_st_rast)
         #nul_or_st = null_strm_ord.save(null_filt_stream_order); print 'nulled filtered stream orders saved'
-        #arcpy.gp.Expand_sa(null_filt_stream_order, expand_filt_streams, expand, "1")
+        #arcpy.gp.Expand_sa(null_filt_stream_order, expand_filt_streams, "2", "1")
+        time.sleep(5); print 'Sleeping for 5 seconds...'
+        print 'Deleting the filled DEM'; arcpy.Delete_management(fill_dem);
+        print 'Deleting flow direction raster'; arcpy.Delete_management(flow_dir);
+        print 'Deleting flow accumulation raster'; arcpy.Delete_management(flow_acc);
+        print 'Deleting filtered stream orders'; arcpy.Delete_management(filt_stream_order);
+        print 'Deleting nulled filtered stream orders'; arcpy.Delete_management(null_filt_stream_order);
+        print 'Deleting expanded filtered stream orders'; arcpy.Delete_management(expand_filt_streams);
+        print 'Deleting streams'; arcpy.Delete_management(streams);
+        print 'Deleting target catchment shape'; arcpy.Delete_management(area_shape);
 
 ################################################################################
 print ""

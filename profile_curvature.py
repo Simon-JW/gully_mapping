@@ -18,12 +18,13 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directory.
-root_dir = (r'C:\\PhD\\junk')#Set the working directory.
-os.chdir(root_dir)
+drive = 'X'
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
+out_folder = drive + ":\PhD\junk"
 
 ################################################################################
 #Basic inputs and outputs.
-filename = 'wean1m'
+filename = 'mar463'
 DEM = os.path.join(root_dir,  filename) #Input DEM.
 
 ################################################################################

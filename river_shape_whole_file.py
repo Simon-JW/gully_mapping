@@ -21,14 +21,16 @@ import time; t0 = time.time()
 import sys
 arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
+################################################################################
 #Set working directories.
-root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
-out = r"C:\PhD\junk"
+drive = 'X'
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
+out_folder = drive + ":\PhD\junk"
 
 ################################################################################
 # Local variables:
 #Set sub-catchments file and corresponding DEM.
-filename = 'weaord'
+filename = 'marord'
 DEM = os.path.join(root_dir, filename)
 desired_stream_orders = 4 # This is then number > the stream order of interest.
 
@@ -142,14 +144,14 @@ arcpy.Dissolve_management(in_diss, diss_merge, "", "", "MULTI_PART", "DISSOLVE_L
 
 ################################################################################
 #Clean up unwanted data.
-root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for file in filenames:
         if file.startswith('exp'):
             print "This file will be deleted " + str(file)
             #arcpy.Delete_management(file)
 
-root_dir = r"C:\PhD\junk"; os.chdir(root_dir)
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for dir in dirnames:
         if dir[:3] == 'exp':
