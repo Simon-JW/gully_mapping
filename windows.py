@@ -42,7 +42,7 @@ standard_deviation = "STD"
 
 ################################################################################
 #Set parameters.
-mean_threshold = -0.1 # Highest elevation anomaly to be preserved.
+mean_threshold = -0.5 # Highest elevation anomaly to be preserved.
 stdev_threshold = -0.5 # Highest elevation anomaly to be preserved.
 iteration_factor = 5 #This is the value to adjust the window size for each iteration.
 range_len = 2 #This is the numer of times you want the loop to iterate through
@@ -100,14 +100,18 @@ for i in range(1,range_len):
 ################################################################################
     #Other optional operations.
 
-    #filt_m = arcpy.Raster(final_mean)
-    #filt_s = arcpy.Raster(final_std)
-    #bool_m = SetNull(filt_m == 0, 1)
-    #bool_s = SetNull(filt_s == 0, 1)
-    #mask_mean = os.path.join(root_dir, in_rast[-6:] + 'b_m'+ str(i))
-    #mask_stdev = os.path.join(root_dir, in_rast[-6:] + 'b_s'+ str(i))
-    #bool_m.save(mask_mean)
-    #bool_s.save(mask_stdev)
+    filt_m = arcpy.Raster(final_mean)
+    filt_s = arcpy.Raster(final_std)
+    bool_m = SetNull(filt_m == 0, 1)
+    bool_s = SetNull(filt_s == 0, 1)
+    mask_mean = os.path.join(root_dir, filename[:3] + 'b_m'+ str(i))
+    mask_stdev = os.path.join(root_dir, filename[:3] + 'b_s'+ str(i))
+    bool_m.save(mask_mean)
+    bool_s.save(mask_stdev)
+    meandiffgul = os.path.join(root_dir, filename[:3] + 'shm'+ str(i))
+    stddiffgul = os.path.join(root_dir, filename[:3] + 'shs'+ str(i))
+    arcpy.RasterToPolygon_conversion(mask_mean, meandiffgul, "SIMPLIFY", "VALUE")
+    arcpy.RasterToPolygon_conversion(mask_stdev, stddiffgul, "SIMPLIFY", "VALUE")
 
 ################################################################################
 
