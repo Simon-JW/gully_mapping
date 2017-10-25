@@ -85,7 +85,10 @@ for row in cursor:
         print (left, bottom, right, top, width, height)
         new = os.path.join(out_folder, dem_file[:3] + target_basin[4:])
         extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
-        arcpy.Clip_management(dem, extent, new, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
+        if arcpy.Exists(new):
+            print 'This file - ' + str(new) + 'already exists'
+        else:
+            arcpy.Clip_management(dem, extent, new, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
         print new
         ################################################################################
         #Syntax for taking extents of rasters.
