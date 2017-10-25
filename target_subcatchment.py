@@ -93,7 +93,7 @@ for row in cursor:
 band_1 = 'B4'
 band_2 = 'B5'
 band_3 = 'B6'
-rgb_inputs = os.path.join(out_folder, dem_file[:3] + '_' + band_1 + '.tif') +';' + os.path.join(out_folder, dem_file[:3] + '_' + band_2 + '.tif') + ';' + os.path.join(out, dem_file[:3] + '_' + band_3 + '.tif')
+rgb_inputs = os.path.join(out_folder, dem_file[:3] + '_' + band_1 + '.tif') +';' + os.path.join(out_folder, dem_file[:3] + '_' + band_2 + '.tif') + ';' + os.path.join(out_folder, dem_file[:3] + '_' + band_3 + '.tif')
 rgb_out = dem_file[:3] + '_' + str(band_1[-1:]) + str(band_2[-1:]) + str(band_3[-1:]) + '.tif'
 rgb_file = os.path.join(out_folder, rgb_out)
 #landsat_files = r"C:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
