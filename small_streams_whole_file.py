@@ -44,7 +44,7 @@ filename = 'marord'
 LessThan = os.path.join(root_dir, 'LessThan')
 SetNull = os.path.join(root_dir, 'SetNull')
 Times = os.path.join(root_dir, 'Times')
-desired_stream_orders = 2 # This is then number <= the stream order of interest.
+desired_stream_orders = 4 # This is then number <= the stream order of interest.
 
 ################################################################################
 #arcpy.FeatureClassToFeatureClass_conversion (catchments, out, "W")
