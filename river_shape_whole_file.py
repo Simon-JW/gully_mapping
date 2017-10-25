@@ -100,7 +100,7 @@ for item in max_ord_streams:
             arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")
 
     ################################################################################
-    arcpy.RasterToPolygon_conversion(output_expand, init_shp, "SIMPLIFY", "VALUE")
+    arcpy.RasterToPolygon_conversion(output_expand, init_shp, "NO_SIMPLIFY", "VALUE")
     arcpy.Dissolve_management(init_shp, diss_shp, "", "", "MULTI_PART", "DISSOLVE_LINES")
     stream_order_list.append(diss_shp)#Creating a list to use for into into megre operator below.
     arcpy.Delete_management(output)

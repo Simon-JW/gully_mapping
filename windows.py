@@ -110,8 +110,8 @@ for i in range(1,range_len):
     bool_s.save(mask_stdev)
     meandiffgul = os.path.join(root_dir, filename[:3] + 'shm'+ str(i))
     stddiffgul = os.path.join(root_dir, filename[:3] + 'shs'+ str(i))
-    arcpy.RasterToPolygon_conversion(mask_mean, meandiffgul, "SIMPLIFY", "VALUE")
-    arcpy.RasterToPolygon_conversion(mask_stdev, stddiffgul, "SIMPLIFY", "VALUE")
+    arcpy.RasterToPolygon_conversion(mask_mean, meandiffgul, "NO_SIMPLIFY", "VALUE")
+    arcpy.RasterToPolygon_conversion(mask_stdev, stddiffgul, "NO_SIMPLIFY", "VALUE")
 
 ################################################################################
 
