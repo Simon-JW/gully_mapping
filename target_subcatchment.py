@@ -34,7 +34,7 @@ DEM = os.path.join(root_dir, dem_file)
 landsat_files = r"X:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
 catchments_shape = 'Mary_subcatchments_mgaz56.shp'
 input_catchments = os.path.join(root_dir, catchments_shape)
-target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
+target_basin = 54 #This is the FID value of the subcatchment of interest.
 bas = "bas" #Short for basin. Is the name of the feature layer created by arcpy.MakeFeatureLayer_management below.
 
 ################################################################################
@@ -65,7 +65,7 @@ cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3],
 ################################################################################
 #Clip DEM according to specific sub-catchment specified.
 for row in cursor:
-    if row[4] == target_basin:
+    if row[0] == target_basin:
         FID_val = row[0]
         arcpy.SelectLayerByAttribute_management(bas, "NEW_SELECTION", "\"FID\" = " + str(FID_val))
         arcpy.FeatureClassToFeatureClass_conversion (bas, out_folder, "area" + str(FID_val)) #. Use this to save all of the shape files.
@@ -73,7 +73,7 @@ for row in cursor:
         print area_shape
         left, bottom, right, top, width, height = extents(area_shape)
         print (left, bottom, right, top, width, height)
-        new = os.path.join(out_folder, dem_file[:3] + target_basin[4:])
+        new = os.path.join(out_folder, dem_file[:3] + str(target_basin))
         extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
         arcpy.Clip_management(DEM, extent, new, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
         print new
