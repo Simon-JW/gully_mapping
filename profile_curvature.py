@@ -24,7 +24,7 @@ out_folder = drive + ":\PhD\junk"
 
 ################################################################################
 #Basic inputs and outputs.
-filename = 'mar463'
+filename = 'mar54'
 DEM = os.path.join(root_dir,  filename) #Input DEM.
 
 ################################################################################
