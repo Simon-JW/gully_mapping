@@ -39,7 +39,7 @@ out_folder = drive + ":\PhD\junk"
 #Set sub-catchments file and corresponding DEM.
 catchments_shape = 'marshm1.shp'
 input_catchments = os.path.join(root_dir, catchments_shape)
-target_basin = 1339 #Needs to be full basin code e.g. 'SC #420' as a string.
+target_basin = 604 #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas" #Short for basin. Is the name of the feature layer created by arcpy.MakeFeatureLayer_management below.
 
 ################################################################################
@@ -88,6 +88,7 @@ for row in cursor:
         arcpy.env.snapRaster = tempEnvironment0
         arcpy.env.extent = tempEnvironment1
         expand_raster = os.path.join(root_dir, 'exp' + str(row[0]))#Output for expand operator below.
+        shrink_raster = os.path.join(root_dir, 'shr' + str(row[0]))#Output for shrink operator below.
         print 'Going into expand loop...';
         ################################################################################
         #This is only required because the expand tool will not take values > 4
@@ -99,11 +100,20 @@ for row in cursor:
             if i == 0: #For the first loop iteration, the file to be expanded will just be the input stream order file (or one stream order from that file).
                 input_expand = output #This is the file created by the Con statement above.
                 output_expand = os.path.join(root_dir, expand_raster + str(i))#Name the expanded raster to be created.
+                output_shrink = os.path.join(root_dir, shrink_raster + str(i))#Name the expanded raster to be created.
                 arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")#Create the expanded raster.
+                #expand_null = os.path.join(root_dir, shrink_raster + str(i))#Name the expanded raster to be created.
+                arcpy.gp.IsNull_sa(exp1, IsNull_exp11)
+                arcpy.gp.Shrink_sa(input_expand, output_shrink, "1", "1")#also shrinking the inital raster by one at the same time.
+                #shrink_null = os.path.join(root_dir, shrink_raster + str(i))#Name the expanded raster to be created.
+                arcpy.gp.IsNull_sa(exp1, IsNull_exp11)
+
+
             elif i > 0:
                 input_expand = os.path.join(root_dir, expand_raster + str(i - 1))
                 output_expand = os.path.join(root_dir, expand_raster + str(i))
                 arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")
+                #Now need to
 
         ################################################################################
 
