@@ -55,6 +55,7 @@ largest_stream = int(max_order.getOutput(0))#This gets change to int so that it
 print "Highest stream order present: " + str(largest_stream)
 if largest_stream <= desired_stream_orders:
     print 'No streams large enough.'
+    exit()#This just stops the script running if there's no suitable streams.
 
 ################################################################################
 #Find all unique stream order values and create a new list containing only
@@ -77,8 +78,7 @@ for item in max_ord_streams:
     print item
     order_value = item; #This is the stream order > that we want to call river.
     output = in_raster + str(item) + '_riv'; #Name of output file to be created.
-    Input_true_raster_or_constant_value = "1"; #What value should the selected range become.
-    arcpy.gp.Con_sa(in_raster, Input_true_raster_or_constant_value, output, "", "\"VALUE\" =" + str(item))
+    arcpy.gp.Con_sa(in_raster, "1", output, "", "\"VALUE\" =" + str(item))
     diss_shp =  os.path.join(root_dir, filename + str(item) + "_ds") #Output for dissolve operator below.
     init_shp = os.path.join(root_dir, 'init' + str(item) + ".shp")  # This will just be a temporary file.
     expand_raster = os.path.join(root_dir, 'exp' + filename + str(item))#Output for expand operator below.
