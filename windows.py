@@ -33,7 +33,7 @@ out_folder = drive + ":\PhD\junk"
 
 ################################################################################
 # Local variables:
-filename = 'mar54'
+filename = 'mar38'
 in_rast = os.path.join(root_dir, filename) # provide a default value if unspecified
 shape = 'Rectangle ' #Name desired shape exactly with one space before closing quotes.
 units = 'CELL' # or 'MAP', no space after
@@ -45,7 +45,7 @@ standard_deviation = "STD"
 mean_threshold = -0.5 # Highest elevation anomaly to be preserved.
 stdev_threshold = -0.5 # Highest elevation anomaly to be preserved.
 iteration_factor = 5 #This is the value to adjust the window size for each iteration.
-range_len = 4 #This is the numer of times you want the loop to iterate through
+range_len = 3 #This is the numer of times you want the loop to iterate through
                 #different window sizes. Because Python indexes from 0, the
                 #number of files you create will always be 1 less than this value.
 

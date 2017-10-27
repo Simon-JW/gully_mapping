@@ -42,7 +42,7 @@ out_folder = drive + ":\PhD\junk"
 # Local variables:
 dem_file = "mary_5m"
 catchments_shape = 'Mary_subcatchments_mgaz56.shp'
-target_basin = 54 #This is the FID value of the subcatchment of interest.
+target_basin = 38 #This is the FID value of the subcatchment of interest.
 flow_acc_value = 1000
 bas = "bas"
 dem = os.path.join(root_dir, dem_file)

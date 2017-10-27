@@ -34,7 +34,7 @@ DEM = os.path.join(root_dir, dem_file)
 landsat_files = r"X:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
 catchments_shape = 'Mary_subcatchments_mgaz56.shp'
 input_catchments = os.path.join(root_dir, catchments_shape)
-target_basin = 54 #This is the FID value of the subcatchment of interest.
+target_basin = 38 #This is the FID value of the subcatchment of interest.
 bas = "bas" #Short for basin. Is the name of the feature layer created by arcpy.MakeFeatureLayer_management below.
 
 ################################################################################
