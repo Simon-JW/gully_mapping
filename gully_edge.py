@@ -31,7 +31,7 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set directories.
-drive = 'C'
+drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
 
@@ -41,6 +41,7 @@ catchments_shape = 'marshm1.shp'
 input_catchments = os.path.join(root_dir, catchments_shape)
 target_basin = 604 #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas" #Short for basin. Is the name of the feature layer created by arcpy.MakeFeatureLayer_management below.
+snapRaster = "X:\\PhD\\junk\\mary_5m"
 
 ################################################################################
 #Function for extracting extents of shapes for defining clipping geometry.
@@ -69,6 +70,12 @@ print fields
 cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3]])
 
 ################################################################################
+#Time taken.
+print ""
+print "Time taken:"
+print "hours: %i, minutes: %i, seconds: %i" %(int((time.time()-t0)/3600), int(((time.time()-t0)%3600)/60), int((time.time()-t0)%60))
+
+################################################################################
 #Clip DEM according to specific sub-catchment specified.
 for row in cursor:
     if row[0] == target_basin:
@@ -80,7 +87,7 @@ for row in cursor:
         left, bottom, right, top, width, height = extents(area_shape)
         print (left, bottom, right, top, width, height)
         tempEnvironment0 = arcpy.env.snapRaster
-        arcpy.env.snapRaster = "X:\\PhD\\junk\\mary_5m"
+        arcpy.env.snapRaster = snapRaster
         tempEnvironment1 = arcpy.env.extent
         arcpy.env.extent = str(left - 25.0) + ' ' + str(bottom - 25.0) + ' ' + str(right + 25.0) + ' ' + str(top + 25.0)
         output = os.path.join(out_folder, 'temp' + str(row[0]))
@@ -95,25 +102,42 @@ for row in cursor:
         #when using arcpy. So this just performs expand within a loop, always only
         #expanding by a value of 1 at a time.
         for i in range(0, 4):
-            print 'Sleeping for 5 seconds...'; time.sleep(5)
+            #print 'Sleeping for 5 seconds...'; time.sleep(5)
             print 'expand number: ' + str(i)
             if i == 0: #For the first loop iteration, the file to be expanded will just be the input stream order file (or one stream order from that file).
                 input_expand = output #This is the file created by the Con statement above.
                 output_expand = os.path.join(root_dir, expand_raster + str(i))#Name the expanded raster to be created.
                 arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")#Create the expanded raster.
-                expand_null = os.path.join(root_dir, shrink_raster + str(i) + 'n')#Name the expanded raster to be created.
+                expand_null = os.path.join(root_dir, expand_raster + str(i) + 'n')#Name the expanded raster to be created.
                 arcpy.gp.IsNull_sa(output_expand, expand_null)
+                inverse_expand_null = os.path.join(root_dir, expand_raster + str(i) + 'n' + 'in')
+                arcpy.gp.Minus_sa(1, expand_null, inverse_expand_null)
                 output_shrink = os.path.join(root_dir, shrink_raster + str(i))#Name the expanded raster to be created.
                 arcpy.gp.Shrink_sa(input_expand, output_shrink, "1", "1")#also shrinking the inital raster by one at the same time.
                 shrink_null = os.path.join(root_dir, shrink_raster + str(i) + 'n')#Name the expanded raster to be created.
                 arcpy.gp.IsNull_sa(output_shrink, shrink_null)
+                inverse_shrink_null = os.path.join(root_dir, shrink_raster + str(i) + 'n' + 'in')
+                arcpy.gp.Minus_sa(1, shrink_null, inverse_shrink_null)
+                edge = os.path.join(root_dir, expand_raster + str(i) + 'ed')
+                arcpy.gp.Minus_sa(inverse_expand_null, inverse_shrink_null, edge)
 
 
             elif i > 0:
                 input_expand = os.path.join(root_dir, expand_raster + str(i - 1))
                 output_expand = os.path.join(root_dir, expand_raster + str(i))
                 arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")
+                expand_null = os.path.join(root_dir, expand_raster + str(i) + 'n')#Name the expanded raster to be created.
+                arcpy.gp.IsNull_sa(output_expand, expand_null)
+                inverse_expand_null = os.path.join(root_dir, expand_raster + str(i) + 'n' + 'in')
+                arcpy.gp.Minus_sa(1, expand_null, inverse_expand_null)
+                edge = os.path.join(root_dir, expand_raster + str(i) + 'ed')
+                arcpy.gp.Minus_sa(inverse_expand_null, os.path.join(root_dir, expand_raster + str(i - 1) + 'n' + 'in'), edge)
                 #Now need to
 
         ################################################################################
 
+################################################################################
+#Time taken.
+print ""
+print "Time taken:"
+print "hours: %i, minutes: %i, seconds: %i" %(int((time.time()-t0)/3600), int(((time.time()-t0)%3600)/60), int((time.time()-t0)%60))
