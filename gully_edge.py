@@ -2,12 +2,13 @@
 # Name:        module1
 # Purpose:
 #
-# Author:      Simon Walker
+# Author:      walkers
 #
-# Created:     22/10/2017
-# Copyright:   (c) Simon Walker 2017
+# Created:     28/10/2017
+# Copyright:   (c) walkers 2017
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
+
 ################################################################################
 #Take ~1-2 mins per sub-catchment.
 
@@ -90,12 +91,35 @@ for row in cursor:
         arcpy.env.snapRaster = snapRaster
         tempEnvironment1 = arcpy.env.extent
         arcpy.env.extent = str(left - 25.0) + ' ' + str(bottom - 25.0) + ' ' + str(right + 25.0) + ' ' + str(top + 25.0)
-        output = os.path.join(out_folder, 'temp' + str(row[0]))
+        output = os.path.join(out_folder, 'r' + str(row[0]))
         arcpy.PolygonToRaster_conversion(area_shape, "FID", output, "CELL_CENTER", "NONE", "5")
         arcpy.env.snapRaster = tempEnvironment0
         arcpy.env.extent = tempEnvironment1
+        ################################################################################
+
+        output_null = os.path.join(root_dir, output + 'n')
+        arcpy.gp.IsNull_sa(output, output_null)
+        inverse_output_null = os.path.join(root_dir, output + 'n' + 'in')
+        arcpy.gp.Minus_sa(1, output_null, inverse_output_null)
+        ################################################################################
+
         expand_raster = os.path.join(root_dir, 'exp' + str(row[0]))#Output for expand operator below.
         shrink_raster = os.path.join(root_dir, 'shr' + str(row[0]))#Output for shrink operator below.
+        arcpy.gp.Shrink_sa(output, shrink_raster, "1", "1")#also shrinking the inital raster by one at the same time.
+        shrink_null = os.path.join(root_dir, shrink_raster + 'n')#Name the expanded raster to be created.
+        arcpy.gp.IsNull_sa(shrink_raster, shrink_null)
+        inverse_shrink_null = os.path.join(root_dir, shrink_raster + 'n' + 'in')
+        arcpy.gp.Minus_sa(1, shrink_null, inverse_shrink_null)
+        ################################################################################
+        #Now subtract the shrink raster from the inital raster.
+        initial_edge = os.path.join(root_dir, output + 'ed')
+        arcpy.gp.Minus_sa(inverse_output_null, inverse_shrink_null, initial_edge)
+        initial_edge_null = os.path.join(root_dir, initial_edge + 'n')
+        arcpy.gp.Con_sa(initial_edge, "0", initial_edge_null, "", "\"VALUE\" =" + '1')
+        initial_edge_shape = os.path.join(root_dir, initial_edge_null + 's')
+        arcpy.RasterToPolygon_conversion(initial_edge_null, initial_edge_shape, "NO_SIMPLIFY", "VALUE")
+
+        ################################################################################
         print 'Going into expand loop...';
         ################################################################################
         #This is only required because the expand tool will not take values > 4
@@ -112,15 +136,13 @@ for row in cursor:
                 arcpy.gp.IsNull_sa(output_expand, expand_null)
                 inverse_expand_null = os.path.join(root_dir, expand_raster + str(i) + 'n' + 'in')
                 arcpy.gp.Minus_sa(1, expand_null, inverse_expand_null)
-                output_shrink = os.path.join(root_dir, shrink_raster + str(i))#Name the expanded raster to be created.
-                arcpy.gp.Shrink_sa(input_expand, output_shrink, "1", "1")#also shrinking the inital raster by one at the same time.
-                shrink_null = os.path.join(root_dir, shrink_raster + str(i) + 'n')#Name the expanded raster to be created.
-                arcpy.gp.IsNull_sa(output_shrink, shrink_null)
-                inverse_shrink_null = os.path.join(root_dir, shrink_raster + str(i) + 'n' + 'in')
-                arcpy.gp.Minus_sa(1, shrink_null, inverse_shrink_null)
-                edge = os.path.join(root_dir, expand_raster + str(i) + 'ed')
-                arcpy.gp.Minus_sa(inverse_expand_null, inverse_shrink_null, edge)
 
+                edge = os.path.join(root_dir, expand_raster + str(i) + 'ed')
+                arcpy.gp.Minus_sa(inverse_expand_null, inverse_output_null, edge)
+                edge_null = os.path.join(root_dir, edge + 'n')
+                arcpy.gp.Con_sa(edge, "0", edge_null, "", "\"VALUE\" =" + '1')
+                edge_shape = os.path.join(root_dir, edge_null + 's')
+                arcpy.RasterToPolygon_conversion(edge_null, edge_shape, "NO_SIMPLIFY", "VALUE")
 
             elif i > 0:
                 input_expand = os.path.join(root_dir, expand_raster + str(i - 1))
@@ -132,9 +154,12 @@ for row in cursor:
                 arcpy.gp.Minus_sa(1, expand_null, inverse_expand_null)
                 edge = os.path.join(root_dir, expand_raster + str(i) + 'ed')
                 arcpy.gp.Minus_sa(inverse_expand_null, os.path.join(root_dir, expand_raster + str(i - 1) + 'n' + 'in'), edge)
+                edge_null = os.path.join(root_dir, edge + 'n')
+                arcpy.gp.Con_sa(edge, "0", edge_null, "", "\"VALUE\" =" + '1')
+                edge_shape = os.path.join(root_dir, edge_null + 's')
+                arcpy.RasterToPolygon_conversion(edge_null, edge_shape, "NO_SIMPLIFY", "VALUE")
                 #Now need to
 
-        ################################################################################
 
 ################################################################################
 #Time taken.
