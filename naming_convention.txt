@@ -34,3 +34,7 @@ sml == Small.
 
 sc == Scaled.
 
+in == Inverse.
+
+ed == Edge.
+
