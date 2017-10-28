@@ -33,10 +33,10 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directories.
-drive = 'X'
+drive = 'C'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
-filename = 'marord'
+filename = 'qldord'
 
 ################################################################################
 # Local variables:

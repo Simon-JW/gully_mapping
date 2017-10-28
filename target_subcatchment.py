@@ -14,24 +14,24 @@ import os
 import time
 t0 = time.time()
 ################################################################################
-#Take ~1-2 mins per sub-catchment.
+#Take ~30 seconds per sub-catchment.
 
 #Requires:
 
 #Creates:
 
-
 ################################################################################
 #Set directories.
-drive = 'X'
+drive = 'C'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
 
 ################################################################################
 #Set sub-catchments file and corresponding DEM.
-dem_file = 'mary_5m'
+dem_file = 'qldz56.tif'
 DEM = os.path.join(root_dir, dem_file)
-landsat_files = r"X:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
+landsat ='LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01'
+landsat_files = os.path.join(root_dir, landsat)
 catchments_shape = 'Mary_subcatchments_mgaz56.shp'
 input_catchments = os.path.join(root_dir, catchments_shape)
 target_basin = 38 #This is the FID value of the subcatchment of interest.
@@ -126,7 +126,7 @@ root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for file in filenames:
         if file.startswith(dem_file[:3] + '_B'):
-            print 'this file will be deleted' + '' + file
+            print 'this file will be deleted ' + '' + file
             arcpy.Delete_management(file)
 
 #Delete larger DEM used for clipping sub-catchment.

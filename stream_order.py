@@ -7,7 +7,7 @@
 # Description:
 # ---------------------------------------------------------------------------
 ################################################################################
-#Take ~1-2 mins per sub-catchment.
+#Take ~30 seconds per sub-catchment.
 
 #Requires:
 # 1. Shapefile with multiple sub-catchments that can be selected individually.
@@ -35,12 +35,12 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set the working directory.
-drive = 'X'
+drive = 'C'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
 ################################################################################
 # Local variables:
-dem_file = "mary_5m"
+dem_file = "qldz56.tif"
 catchments_shape = 'Mary_subcatchments_mgaz56.shp'
 target_basin = 38 #This is the FID value of the subcatchment of interest.
 flow_acc_value = 1000

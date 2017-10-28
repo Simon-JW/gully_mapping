@@ -31,7 +31,7 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set directories.
-drive = 'X'
+drive = 'C'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
 
@@ -100,13 +100,13 @@ for row in cursor:
             if i == 0: #For the first loop iteration, the file to be expanded will just be the input stream order file (or one stream order from that file).
                 input_expand = output #This is the file created by the Con statement above.
                 output_expand = os.path.join(root_dir, expand_raster + str(i))#Name the expanded raster to be created.
-                output_shrink = os.path.join(root_dir, shrink_raster + str(i))#Name the expanded raster to be created.
                 arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")#Create the expanded raster.
-                #expand_null = os.path.join(root_dir, shrink_raster + str(i))#Name the expanded raster to be created.
-                arcpy.gp.IsNull_sa(exp1, IsNull_exp11)
+                expand_null = os.path.join(root_dir, shrink_raster + str(i) + 'n')#Name the expanded raster to be created.
+                arcpy.gp.IsNull_sa(output_expand, expand_null)
+                output_shrink = os.path.join(root_dir, shrink_raster + str(i))#Name the expanded raster to be created.
                 arcpy.gp.Shrink_sa(input_expand, output_shrink, "1", "1")#also shrinking the inital raster by one at the same time.
-                #shrink_null = os.path.join(root_dir, shrink_raster + str(i))#Name the expanded raster to be created.
-                arcpy.gp.IsNull_sa(exp1, IsNull_exp11)
+                shrink_null = os.path.join(root_dir, shrink_raster + str(i) + 'n')#Name the expanded raster to be created.
+                arcpy.gp.IsNull_sa(output_shrink, shrink_null)
 
 
             elif i > 0:
