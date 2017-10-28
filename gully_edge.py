@@ -43,6 +43,7 @@ input_catchments = os.path.join(root_dir, catchments_shape)
 target_basin = 604 #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas" #Short for basin. Is the name of the feature layer created by arcpy.MakeFeatureLayer_management below.
 snapRaster = "X:\\PhD\\junk\\mary_5m"
+curvature_layer = "X:\\PhD\\junk\\scpromar381"
 
 ################################################################################
 #Function for extracting extents of shapes for defining clipping geometry.
@@ -79,6 +80,7 @@ print "hours: %i, minutes: %i, seconds: %i" %(int((time.time()-t0)/3600), int(((
 ################################################################################
 #Clip DEM according to specific sub-catchment specified.
 for row in cursor:
+    values = []
     if row[0] == target_basin:
         FID_val = row[0]
         arcpy.SelectLayerByAttribute_management(bas, "NEW_SELECTION", "\"FID\" = " + str(FID_val))
@@ -118,6 +120,12 @@ for row in cursor:
         arcpy.gp.Con_sa(initial_edge, "0", initial_edge_null, "", "\"VALUE\" =" + '1')
         initial_edge_shape = os.path.join(root_dir, initial_edge_null + 's')
         arcpy.RasterToPolygon_conversion(initial_edge_null, initial_edge_shape, "NO_SIMPLIFY", "VALUE")
+        initial_edge_curvature = os.path.join(root_dir, initial_edge + 'ft')
+        arcpy.gp.ZonalStatistics_sa(initial_edge_shape + '.shp', "Id", curvature_layer, initial_edge_curvature, "STD", "DATA")
+        edge_curv_value = arcpy.GetRasterProperties_management(initial_edge_curvature, "MEAN")
+        min_value = edge_curv_value.getOutput(0)
+        values.append(min_value)
+        print values
 
         ################################################################################
         print 'Going into expand loop...';
@@ -136,13 +144,20 @@ for row in cursor:
                 arcpy.gp.IsNull_sa(output_expand, expand_null)
                 inverse_expand_null = os.path.join(root_dir, expand_raster + str(i) + 'n' + 'in')
                 arcpy.gp.Minus_sa(1, expand_null, inverse_expand_null)
-
+                edge_curvature = os.path.join(root_dir, initial_edge + 'ft')
                 edge = os.path.join(root_dir, expand_raster + str(i) + 'ed')
                 arcpy.gp.Minus_sa(inverse_expand_null, inverse_output_null, edge)
                 edge_null = os.path.join(root_dir, edge + 'n')
                 arcpy.gp.Con_sa(edge, "0", edge_null, "", "\"VALUE\" =" + '1')
                 edge_shape = os.path.join(root_dir, edge_null + 's')
                 arcpy.RasterToPolygon_conversion(edge_null, edge_shape, "NO_SIMPLIFY", "VALUE")
+
+                edge_curvature = os.path.join(root_dir, edge + 'ft')
+                arcpy.gp.ZonalStatistics_sa(edge_shape + '.shp', "Id", curvature_layer, edge_curvature, "STD", "DATA")
+                edge_curv_value = arcpy.GetRasterProperties_management(edge_curvature, "MEAN")
+                min_value = edge_curv_value.getOutput(0)
+                values.append(min_value)
+                print values
 
             elif i > 0:
                 input_expand = os.path.join(root_dir, expand_raster + str(i - 1))
@@ -158,6 +173,14 @@ for row in cursor:
                 arcpy.gp.Con_sa(edge, "0", edge_null, "", "\"VALUE\" =" + '1')
                 edge_shape = os.path.join(root_dir, edge_null + 's')
                 arcpy.RasterToPolygon_conversion(edge_null, edge_shape, "NO_SIMPLIFY", "VALUE")
+
+                edge_curvature = os.path.join(root_dir, edge + 'ft')
+                arcpy.gp.ZonalStatistics_sa(edge_shape + '.shp', "Id", curvature_layer, edge_curvature, "STD", "DATA")
+                edge_curv_value = arcpy.GetRasterProperties_management(edge_curvature, "MEAN")
+                min_value = edge_curv_value.getOutput(0)
+                values.append(min_value)
+                print values
+
                 #Now need to
 
 
