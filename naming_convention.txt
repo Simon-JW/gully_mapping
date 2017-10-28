@@ -38,3 +38,7 @@ in == Inverse.
 
 ed == Edge.
 
+s = Shapefile.
+
+r = Raster.
+
