@@ -42,3 +42,5 @@ s = Shapefile.
 
 r = Raster.
 
+ft = Fitness (used when checking edge of gully and average curvature value).
+
