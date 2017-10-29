@@ -103,6 +103,7 @@ for row in cursor:
         arcpy.gp.IsNull_sa(output, output_null)
         inverse_output_null = os.path.join(root_dir, output + 'n' + 'in')
         arcpy.gp.Minus_sa(1, output_null, inverse_output_null)
+
         ################################################################################
 
         expand_raster = os.path.join(root_dir, 'exp' + str(row[0]))#Output for expand operator below.
@@ -112,6 +113,7 @@ for row in cursor:
         arcpy.gp.IsNull_sa(shrink_raster, shrink_null)
         inverse_shrink_null = os.path.join(root_dir, shrink_raster + 'n' + 'in')
         arcpy.gp.Minus_sa(1, shrink_null, inverse_shrink_null)
+
         ################################################################################
         #Now subtract the shrink raster from the inital raster.
         initial_edge = os.path.join(root_dir, output + 'ed')
@@ -121,7 +123,7 @@ for row in cursor:
         initial_edge_shape = os.path.join(root_dir, initial_edge_null + 's')
         arcpy.RasterToPolygon_conversion(initial_edge_null, initial_edge_shape, "NO_SIMPLIFY", "VALUE")
         initial_edge_curvature = os.path.join(root_dir, initial_edge + 'ft')
-        arcpy.gp.ZonalStatistics_sa(initial_edge_shape + '.shp', "Id", curvature_layer, initial_edge_curvature, "STD", "DATA")
+        arcpy.gp.ZonalStatistics_sa(initial_edge_shape + '.shp', "Id", curvature_layer, initial_edge_curvature, "MEAN", "DATA")
         edge_curv_value = arcpy.GetRasterProperties_management(initial_edge_curvature, "MEAN")
         min_value = edge_curv_value.getOutput(0)
         values.append(min_value)
@@ -153,7 +155,7 @@ for row in cursor:
                 arcpy.RasterToPolygon_conversion(edge_null, edge_shape, "NO_SIMPLIFY", "VALUE")
 
                 edge_curvature = os.path.join(root_dir, edge + 'ft')
-                arcpy.gp.ZonalStatistics_sa(edge_shape + '.shp', "Id", curvature_layer, edge_curvature, "STD", "DATA")
+                arcpy.gp.ZonalStatistics_sa(edge_shape + '.shp', "Id", curvature_layer, edge_curvature, "MEAN", "DATA")
                 edge_curv_value = arcpy.GetRasterProperties_management(edge_curvature, "MEAN")
                 min_value = edge_curv_value.getOutput(0)
                 values.append(min_value)
@@ -175,7 +177,7 @@ for row in cursor:
                 arcpy.RasterToPolygon_conversion(edge_null, edge_shape, "NO_SIMPLIFY", "VALUE")
 
                 edge_curvature = os.path.join(root_dir, edge + 'ft')
-                arcpy.gp.ZonalStatistics_sa(edge_shape + '.shp', "Id", curvature_layer, edge_curvature, "STD", "DATA")
+                arcpy.gp.ZonalStatistics_sa(edge_shape + '.shp', "Id", curvature_layer, edge_curvature, "MEAN", "DATA")
                 edge_curv_value = arcpy.GetRasterProperties_management(edge_curvature, "MEAN")
                 min_value = edge_curv_value.getOutput(0)
                 values.append(min_value)
