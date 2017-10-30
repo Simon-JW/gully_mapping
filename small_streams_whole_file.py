@@ -34,7 +34,7 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
-filename = 'mar_38_ord'
+filename = 'mar_90_ord'
 desired_stream_orders = 4 # This is then number <= the stream order of interest.
 
 ################################################################################
@@ -150,7 +150,7 @@ elif number_of_items == 4:
     print "Four streams <= " + str(desired_stream_orders)
     arcpy.Merge_management([str(stream_order_list[0]) + '.shp', str(stream_order_list[1]) + '.shp', str(stream_order_list[2]) + '.shp', str(stream_order_list[3]) + '.shp'], merged_streams)
 
-diss_merge = os.path.join(root_dir, filename[0:6] + '_' + "sml" + ".shp") # This will just be a temporary file.
+diss_merge = os.path.join(root_dir, filename[0:7] + '_' + "sml" + ".shp") # This will just be a temporary file.
 in_diss = os.path.join(root_dir, filename[0:3] + 'm' + '.shp')
 arcpy.Dissolve_management(in_diss, diss_merge, "", "", "MULTI_PART", "DISSOLVE_LINES")
 
