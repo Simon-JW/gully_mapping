@@ -147,7 +147,7 @@ elif number_of_items == 5:
     print "Four streams > order " + str(desired_stream_orders)
     arcpy.Merge_management([str(stream_order_list[0]) + '.shp', str(stream_order_list[1]) + '.shp', str(stream_order_list[2]) + '.shp', str(stream_order_list[3]) + '.shp', str(stream_order_list[4]) + '.shp'], merged_streams)
 
-diss_merge = os.path.join(root_dir, filename[:6] + "lge" + ".shp")  # This will just be a temporary file.
+diss_merge = os.path.join(root_dir, filename[:7] + "lge" + ".shp")  # This will just be a temporary file.
 print diss_merge
 in_diss = merged_streams + '.shp'
 print in_diss

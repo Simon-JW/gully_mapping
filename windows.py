@@ -6,15 +6,14 @@
 # Usage: windows <fitz_f12_tif> <Foc_test>
 # Description:
 # ---------------------------------------------------------------------------
-################################################################################
 #Take ~1-2 mins per sub-catchment.
 
 #Requires:
+# 1. DEM.
 
 #Creates:
+# 1.
 
-
-################################################################################
 # Imports
 import arcpy
 from arcpy import env
@@ -30,17 +29,8 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
+filename = 'mar_90_dem' #This is the input DEM.
 
-################################################################################
-# Local variables:
-filename = 'mar38'
-in_rast = os.path.join(root_dir, filename) # provide a default value if unspecified
-shape = 'Rectangle ' #Name desired shape exactly with one space before closing quotes.
-units = 'CELL' # or 'MAP', no space after
-mean = "MEAN" #Can be any of the acceptable operations depending on data type (float or int)
-standard_deviation = "STD"
-
-################################################################################
 #Set parameters.
 mean_threshold = -0.5 # Highest elevation anomaly to be preserved.
 stdev_threshold = -0.5 # Highest elevation anomaly to be preserved.
@@ -50,12 +40,19 @@ range_len = 3 #This is the numer of times you want the loop to iterate through
                 #number of files you create will always be 1 less than this value.
 
 ################################################################################
+# Local variables:
+in_rast = os.path.join(root_dir, filename) # provide a default value if unspecified
+shape = 'Rectangle ' #Name desired shape exactly with one space before closing quotes.
+units = 'CELL' # or 'MAP', no space after
+mean = "MEAN" #Can be any of the acceptable operations depending on data type (float or int)
+standard_deviation = "STD"
 
+#------------------------------------------------------------------------------#
 #Main program.
 for i in range(1,range_len):
     height = str(i * iteration_factor) + ' '
     width = str(i * iteration_factor) + ' '
-    ############################################################################
+    #--------------------------------------------------------------------------#
     #Window mean.
     mean_out = filename[:2] + '_' + 'm' + '_'  + str(i*iteration_factor)#
     new_m = os.path.join(root_dir,mean_out)
@@ -72,7 +69,7 @@ for i in range(1,range_len):
     final_mean = os.path.join(root_dir, filename[:2] + 'fim'+ str(i*iteration_factor))
     arcpy.gp.Times_sa(final_mean_mask, outName_mean, final_mean)
 
-    ############################################################################
+    #--------------------------------------------------------------------------#
     #Window standarised anomalies.
     stdev_out = filename[:2] + '_' + 's' + '_'  + str(i*iteration_factor)
     new_s = os.path.join(root_dir,stdev_out)
@@ -86,20 +83,20 @@ for i in range(1,range_len):
     std_thold = arcpy.gp.LessThanEqual_sa(win_mean, mean_threshold, final_std_mask)
     final_std = os.path.join(root_dir, filename[:2] + 'fis'+ str(i*iteration_factor))
     arcpy.gp.Times_sa(final_std_mask, outName_stdev, final_std)
-    ################################################################################
+
+    #--------------------------------------------------------------------------#
     #Clean up unwanted standardised anomaly files.
     arcpy.Delete_management(new_s)
     arcpy.Delete_management(outName_stdev)
     #arcpy.Delete_management(final_std)
-    ################################################################################
+    #--------------------------------------------------------------------------#
     #Clean up unwanted anomaly files.
     arcpy.Delete_management(new_m)
     arcpy.Delete_management(outName_mean)
     #arcpy.Delete_management(final_mean)
 
-################################################################################
+#------------------------------------------------------------------------------#
     #Other optional operations.
-
     filt_m = arcpy.Raster(final_mean)
     filt_s = arcpy.Raster(final_std)
     bool_m = SetNull(filt_m == 0, 1)
@@ -113,8 +110,7 @@ for i in range(1,range_len):
     arcpy.RasterToPolygon_conversion(mask_mean, meandiffgul, "NO_SIMPLIFY", "VALUE")
     arcpy.RasterToPolygon_conversion(mask_stdev, stddiffgul, "NO_SIMPLIFY", "VALUE")
 
-################################################################################
-
+#------------------------------------------------------------------------------#
 print ""
 print "Time taken: " "hours: %i, minutes: %i, seconds: %i" %(int((time.time()-t0)/3600), int(((time.time()-t0)%3600)/60), int((time.time()-t0)%60))
 
