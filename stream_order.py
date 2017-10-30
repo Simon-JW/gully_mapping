@@ -69,7 +69,7 @@ def extents(fc):
 arcpy.MakeFeatureLayer_management(input_catchments, bas, "", "", "FID FID VISIBLE NONE;Shape Shape VISIBLE NONE;Id Id VISIBLE NONE;gridcode gridcode VISIBLE NONE")
 #This is required because SelectByFeature and SelectByAttribute do not work on shape files using arcpy. Hence they need to first be convereted to feature layers.
 fields = [f.name for f in arcpy.ListFields(bas)]#Just tells me what field names the data has.
-print len(fields); print fields
+print 'Number of fileds in shapefile' + ' - ' + str(len(fields)); print 'List of fileds ' + str(fields)
 cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3], fields[4]])
 
 #------------------------------------------------------------------------------#
