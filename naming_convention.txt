@@ -4,7 +4,7 @@ riv == river
 
 ds == Shapefile that has been dissolved using ArcGIS dissolve tool.
 
-exp == Raster file that has be expanded some amount using ArcGIS expand tool.
+x == Raster file that has be expanded some amount using ArcGIS expand tool.
 
 strm == A stream that has been delineated using ArcGIS stream order tool.
 
@@ -28,9 +28,9 @@ lss == Less than.
 
 grt == Greater than.
 
-lge == Large.
+lge == Large streams.
 
-sml == Small.
+sml == Small streams.
 
 sc == Scaled.
 
