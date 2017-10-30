@@ -124,7 +124,7 @@ for row in cursor:
         #null_strm_ord = SetNull(fil_or_st_rast == 0, fil_or_st_rast)
         #nul_or_st = null_strm_ord.save(null_filt_stream_order); print 'nulled filtered stream orders saved'
         #arcpy.gp.Expand_sa(null_filt_stream_order, expand_filt_streams, "2", "1")
-        time.sleep(5); print 'Sleeping for 5 seconds...'
+        time.sleep(1); print 'Sleeping for 1 second...'
         print 'Deleting the filled DEM'; arcpy.Delete_management(fill_dem);
         print 'Deleting flow direction raster'; arcpy.Delete_management(flow_dir);
         print 'Deleting flow accumulation raster'; arcpy.Delete_management(flow_acc);
