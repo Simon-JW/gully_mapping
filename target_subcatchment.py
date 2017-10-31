@@ -25,15 +25,15 @@ import time
 t0 = time.time()
 ################################################################################
 #Set directories.
-drive = 'X'
+drive = 'C'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
 
 #Set sub-catchments file and corresponding DEM.
-dem_file = 'mary_5m'
-catchments_shape = 'Mary_subcatchments_mgaz56.shp'
+dem_file = 'wean1m'
+catchments_shape = 'weany_ck.shp'
 landsat ='LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01'
-target_basin = 90 #This is the FID value of the subcatchment of interest.
+target_basin = 0 #This is the FID value of the subcatchment of interest.
 
 ################################################################################
 #Automatically sets paths to files.
@@ -65,7 +65,7 @@ arcpy.MakeFeatureLayer_management(input_catchments, bas, "", "", "FID FID VISIBL
 #Look at what field names are in the shape file table.
 fields = [f.name for f in arcpy.ListFields(bas)]#Just tells me what field names the data has.
 print fields
-cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3], fields[4]])
+cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3]])
 
 #------------------------------------------------------------------------------#
 #Clip DEM according to specific sub-catchment specified.
