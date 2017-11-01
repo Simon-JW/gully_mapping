@@ -39,8 +39,8 @@ out_folder = drive + ":\PhD\junk"
 # Local variables:
 dem_file = "mary_5m"
 catchments_shape = 'Mary_subcatchments_mgaz56.shp'
-target_basin = 90 #This is the FID value of the subcatchment of interest.
-flow_acc_value = 1000
+target_basin = 7 #This is the FID value of the subcatchment of interest.
+flow_acc_value = 100
 
 ################################################################################
 #Automatically sets paths to files.

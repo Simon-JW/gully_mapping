@@ -21,13 +21,8 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
+filename = 'mar_7_dem'
 
-################################################################################
-#Basic inputs and outputs.
-filename = 'mar38'
-DEM = os.path.join(root_dir,  filename) #Input DEM.
-
-################################################################################
 #Adjustable parameters.
 
 Z_factor = "1"
@@ -36,26 +31,29 @@ range_len = 2 #This is the numer of times you want the loop to iterate through
                 #number of files you create will always be 1 less than this value.
 minprocurve = -1
 maxprocurve = 1
-
 ################################################################################
+
+DEM = os.path.join(root_dir,  filename) #Input DEM.
+
+#------------------------------------------------------------------------------#
 #Main program.
 for i in range(1,range_len):
-    print 'profile curvature ' + '+-' + str(i)
+    print 'profile curvature ' + '+/- ' + str(i)
     min = str(i * minprocurve)#Minimum.
     max = str(i * maxprocurve)#Maximum.
     base = 'curvature' + str(i)
     curve = os.path.join(root_dir, base) #Input DEM.
-    pro_curve = os.path.join(root_dir, 'pro' + filename + str(i))#Output profile curvature raster.
-    pprocurve = os.path.join(root_dir, 'p' + 'pro' + filename + str(i))#p==positive and corresponds to max, above.
-    mpprocurve = os.path.join(root_dir, 'm' + 'p' + 'pro' + filename + str(i))
-    nprocurve = os.path.join(root_dir, 'n' + 'pro' + filename + str(i))#n==negative and corresponds to min, above.
-    mnprocurve = os.path.join(root_dir, 'm' + 'n' + 'pro' + filename + str(i))
-    p_plus_n = os.path.join(root_dir, 'n' + 'p' + 'pro' + filename + str(i))#Combining max and min filtered rasters.
-    filtprocurve = os.path.join(root_dir, 'f' + 'pro' + filename + str(i))
-    inverse = os.path.join(root_dir, 'inv' + 'pro' + filename + str(i))
+    pro_curve = os.path.join(root_dir, 'pro' + filename[:3] + str(i))#Output profile curvature raster.
+    pprocurve = os.path.join(root_dir, 'p' + 'pro' + filename[:3] + str(i))#p==positive and corresponds to max, above.
+    mpprocurve = os.path.join(root_dir, 'm' + 'p' + 'pro' + filename[:3] + str(i))
+    nprocurve = os.path.join(root_dir, 'n' + 'pro' + filename[:3] + str(i))#n==negative and corresponds to min, above.
+    mnprocurve = os.path.join(root_dir, 'm' + 'n' + 'pro' + filename[:3] + str(i))
+    p_plus_n = os.path.join(root_dir, 'n' + 'p' + 'pro' + filename[:3] + str(i))#Combining max and min filtered rasters.
+    filtprocurve = os.path.join(root_dir, 'f' + 'pro' + filename[:3] + str(i))
+    inverse = os.path.join(root_dir, 'inv' + 'pro' + filename[:3] + str(i))
     #nullprocurve = os.path.join(root_dir, 'null' + 'pro' + filename)
-    pfiltprocurve = os.path.join(root_dir, 'p' + 'f' + 'pro' + filename + str(i))
-    scaled_procurve = os.path.join(root_dir, 'sc' + 'pro' + filename + str(i))
+    pfiltprocurve = os.path.join(root_dir, 'p' + 'f' + 'pro' + filename[:3] + str(i))
+    scaled_procurve = os.path.join(root_dir, filename[:5] + '_'+ 'sc' + 'pro' + str(i))
     arcpy.gp.Curvature_sa(DEM, curve, Z_factor, pro_curve); time.sleep(2)
     arcpy.gp.GreaterThanEqual_sa(pro_curve, max, pprocurve); time.sleep(2)
     arcpy.gp.Times_sa(pprocurve, max, mpprocurve);time.sleep(2)
@@ -80,8 +78,7 @@ for i in range(1,range_len):
     arcpy.Delete_management(filtprocurve, "")
     arcpy.Delete_management(pfiltprocurve, "")
 
-
-################################################################################
+#------------------------------------------------------------------------------#
 print ""
 print "Time taken:"
 print "hours: %i, minutes: %i, seconds: %i" %(int((time.time()-t0)/3600), int(((time.time()-t0)%3600)/60), int((time.time()-t0)%60))

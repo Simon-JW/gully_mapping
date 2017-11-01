@@ -35,7 +35,7 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
-filename = 'mar_90_ord'
+filename = 'mar_7_ord'
 desired_stream_orders = 4 # This is then number > the stream order of interest.
 
 ################################################################################
