@@ -31,7 +31,7 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 gully_edge_files = 'gully_edge_files';
-catchments_shape = 'test_gul3.shp'
+catchments_shape = 'test_gul2.shp'
 snapRaster = "X:\\PhD\\junk\\mary_5m"
 curvature_layer = "X:\\PhD\\junk\mar_7_scpro1"
 delete_ancillary_files = 'no' #Either yes or no.
@@ -204,9 +204,10 @@ for row in cursor:
     best_value = min(values)
     print best_value
     best_value_index = values.index(best_value)
-    gullies[0,0] = FID_val
-    gullies[0,1] = best_value_index
-    gullies[0,2] = best_value
+    m = int(FID_val)
+    gullies[m,0] = FID_val
+    gullies[m,1] = best_value_index
+    gullies[m,2] = best_value
 
 #------------------------------------------------------------------------------#
 #Now look at optimal expand value for each gully.
