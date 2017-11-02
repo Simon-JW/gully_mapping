@@ -33,7 +33,7 @@ gully_edge_files = 'gully_edge_files';
 catchments_shape = 'test_gul2.shp'
 snapRaster = "X:\\PhD\\junk\\mary_5m"
 curvature_layer = "X:\\PhD\\junk\mar_7_scpro1"
-delete_ancillary_files = 'yes' #Either yes or no.
+delete_ancillary_files = 'no' #Either yes or no.
 
 ################################################################################
 #Set sub-catchments file and corresponding DEM.
