@@ -21,7 +21,7 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
-filename = 'mar_7_dem'
+filename = 'mar_29_dem'
 
 #Adjustable parameters.
 
@@ -53,7 +53,7 @@ for i in range(1,range_len):
     inverse = os.path.join(root_dir, 'inv' + 'pro' + filename[:3] + str(i))
     #nullprocurve = os.path.join(root_dir, 'null' + 'pro' + filename)
     pfiltprocurve = os.path.join(root_dir, 'p' + 'f' + 'pro' + filename[:3] + str(i))
-    scaled_procurve = os.path.join(root_dir, filename[:5] + '_'+ 'sc' + 'pro' + str(i))
+    scaled_procurve = os.path.join(root_dir, filename[:6] + '_'+ 'sc' + 'pro' + str(i))
     arcpy.gp.Curvature_sa(DEM, curve, Z_factor, pro_curve); time.sleep(2)
     arcpy.gp.GreaterThanEqual_sa(pro_curve, max, pprocurve); time.sleep(2)
     arcpy.gp.Times_sa(pprocurve, max, mpprocurve);time.sleep(2)

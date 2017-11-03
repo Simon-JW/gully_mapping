@@ -36,6 +36,10 @@ sc == Scaled.
 
 in == Inverse.
 
+flt == Float.
+
+int == Integer. 
+
 ed == Edge.
 
 s = Shapefile.

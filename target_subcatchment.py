@@ -33,7 +33,7 @@ out_folder = drive + ":\PhD\junk"
 dem_file = 'mary_5m'
 catchments_shape = 'Mary_subcatchments_mgaz56.shp'
 landsat ='LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01'
-target_basin = 7 #This is the FID value of the subcatchment of interest.
+target_basin = 65 #This is the FID value of the subcatchment of interest.
 
 ################################################################################
 #Automatically sets paths to files.
@@ -136,7 +136,7 @@ for (dirpath, dirnames, filenames) in os.walk('.'):
     for file in filenames:
         if file.startswith(dem_file[:3] + str(target_basin) + '_B'):
             print 'this file will be deleted ' + '' + file
-            arcpy.Delete_management(file)
+            #arcpy.Delete_management(file)
 
 #Delete larger DEM used for clipping sub-catchment.
 #arcpy.Delete_management(DEM)

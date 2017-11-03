@@ -31,9 +31,9 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 gully_edge_files = 'gully_edge_files';
-catchments_shape = 'test_gul2.shp'
+catchments_shape = 'examples.shp'
 snapRaster = "X:\\PhD\\junk\\mary_5m"
-curvature_layer = "X:\\PhD\\junk\mar_7_scpro1"
+curvature_layer = "X:\\PhD\\junk\mar_1_scpro1"
 delete_ancillary_files = 'no' #Either yes or no.
 
 ################################################################################

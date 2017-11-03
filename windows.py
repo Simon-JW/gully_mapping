@@ -29,7 +29,7 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
-filename = 'mar_7_dem' #This is the input DEM.
+filename = 'mar_29_dem' #This is the input DEM.
 
 #Set parameters.
 mean_threshold = -0.5 # Highest elevation anomaly to be preserved.
