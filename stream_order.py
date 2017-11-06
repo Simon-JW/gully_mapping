@@ -152,6 +152,7 @@ if delete_ancillary_files == 'yes':
            #arcpy.Delete_management(dir)
             #os.rmdir(dir)
             shutil.rmtree(dir)
+            os.rmdir(out_folder)
 else:
     print 'Keeping all files.'
 
