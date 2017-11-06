@@ -29,27 +29,33 @@ from arcpy.sa import *
 import time; t0 = time.time()
 import sys
 arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
+arcpy.env.overwriteOutput = True
+import shutil
 
 ################################################################################
-#Set the working directory.
-drive = 'X'
+#Section 1: Set the working directory.
+drive = 'C'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
+stream_order_files = 'stream_order_files';
 
 # Local variables:
-dem_file = "mary_5m"
-catchments_shape = 'Mary_subcatchments_mgaz56.shp'
-target_basin = 29 #This is the FID value of the subcatchment of interest.
-flow_acc_value = 100
+dem_file = "wean1m"
+catchments_shape = 'weany_ck.shp'
+target_basin = 0 #This is the FID value of the subcatchment of interest.
+flow_acc_value = 1000
+delete_ancillary_files = "yes" # Either yes or no.
 
 ################################################################################
-#Automatically sets paths to files.
+#Section 2: Automatically sets paths to files.
+out_folder = os.path.join(root_dir, stream_order_files)
+os.mkdir(out_folder)
 bas = "bas"
 dem = os.path.join(root_dir, dem_file)
 input_catchments = os.path.join(root_dir, catchments_shape)
 
 #------------------------------------------------------------------------------#
-#Function for extracting extent from shapefiles.
+#Section 3: Function for extracting extent from shapefiles.
 def extents(fc):
     extent = arcpy.Describe(fc).extent
     west = extent.XMin
@@ -65,15 +71,16 @@ def extents(fc):
 #w2, s2, e2, n2, wid2, hgt2 = extents(shape2)
 
 #------------------------------------------------------------------------------#
-# Process: Make Feature Layer
+# Section 4: Process: Make Feature Layer
 arcpy.MakeFeatureLayer_management(input_catchments, bas, "", "", "FID FID VISIBLE NONE;Shape Shape VISIBLE NONE;Id Id VISIBLE NONE;gridcode gridcode VISIBLE NONE")
 #This is required because SelectByFeature and SelectByAttribute do not work on shape files using arcpy. Hence they need to first be convereted to feature layers.
 fields = [f.name for f in arcpy.ListFields(bas)]#Just tells me what field names the data has.
 print 'Number of fileds in shapefile' + ' - ' + str(len(fields)); print 'List of fileds ' + str(fields)
-cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3], fields[4]])
+#cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3], fields[4]])
+cursor = arcpy.da.SearchCursor(bas, [fields[0]])
 
 #------------------------------------------------------------------------------#
-
+#Section 5: Main program
 for row in cursor:
     if row[0] == target_basin:
         FID_val = row[0]
@@ -101,14 +108,14 @@ for row in cursor:
         #bottom = int(dem_raster.extent.YMin)
         #----------------------------------------------------------------------#
         input_dem = clipped_dem # provide a default value if unspecified
-        fill_dem = os.path.join(root_dir, dem_file[:3] + 'f')
-        flow_dir = os.path.join(root_dir, dem_file[:3] +'dir')
-        flow_acc = os.path.join(root_dir, dem_file[:3] +'fa')
-        streams = os.path.join(root_dir, dem_file[:3] +'str')
-        stream_order = os.path.join(root_dir, dem_file[:3] +'_' + str(target_basin) + '_' +'ord')
-        filt_stream_order = os.path.join(root_dir, dem_file[:3] +'f_ord')
-        null_filt_stream_order = os.path.join(root_dir, dem_file[:3] +'nf_ord')
-        expand_filt_streams = os.path.join(root_dir, dem_file[:3] +'ef_ord')
+        fill_dem = os.path.join(out_folder, dem_file[:3] + 'f')
+        flow_dir = os.path.join(out_folder, dem_file[:3] +'dir')
+        flow_acc = os.path.join(out_folder, dem_file[:3] +'fa')
+        streams = os.path.join(out_folder, dem_file[:3] +'str')
+        stream_order = os.path.join(root_dir, dem_file[:3] +'_' + str(target_basin) + '_' +'ord')#This file goes to root_dir because it is the main output of this program.
+        filt_stream_order = os.path.join(out_folder, dem_file[:3] +'f_ord')
+        null_filt_stream_order = os.path.join(out_folder, dem_file[:3] +'nf_ord')
+        expand_filt_streams = os.path.join(out_folder, dem_file[:3] +'ef_ord')
         #----------------------------------------------------------------------#
         arcpy.gp.Fill_sa(input_dem, fill_dem, ""); print 'fill works'
         arcpy.gp.FlowDirection_sa(fill_dem, flow_dir, "NORMAL", ""); print 'flow direction works'
@@ -133,6 +140,23 @@ for row in cursor:
         print 'Deleting expanded filtered stream orders'; arcpy.Delete_management(expand_filt_streams);
         print 'Deleting streams'; arcpy.Delete_management(streams);
         print 'Deleting target catchment shape'; arcpy.Delete_management(area_shape);
+
+#------------------------------------------------------------------------------#
+#Clean up unwanted data.
+time.sleep(5)
+if delete_ancillary_files == 'yes':
+
+
+    for (dirpath, dirnames, filenames) in os.walk('.'):
+        for dir in dirnames:
+            print dir
+            print "This directory will be deleted " + str(dir)
+           #arcpy.Delete_management(dir)
+            #os.rmdir(dir)
+            shutil.rmtree(dir)
+
+else:
+    print 'Keeping all files.'
 
 #------------------------------------------------------------------------------#
 print ""

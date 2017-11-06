@@ -31,10 +31,10 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directories.
-drive = 'X'
+drive = 'C'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
-filename = 'mar_29_ord'
+filename = 'wea_0_ord'
 desired_stream_orders = 4 # This is then number <= the stream order of interest.
 
 ################################################################################

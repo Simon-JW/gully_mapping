@@ -33,17 +33,17 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directories.
-drive = 'X'
+drive = 'C'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
 
 ################################################################################
 #Set sub-catchments file and corresponding DEM.
-area = 'Mary_subcatchments_mgaz56.shp'
+area = 'weany_ck.shp'
 input_catchments = os.path.join(root_dir, area)
-target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
+target_basin = 0 #Needs to be FID of target area.
 bas = "bas" #Short for basin.
-filename = 'qldord' #Input stream order raster.
+filename = 'wea_0_ord' #Input stream order raster.
 DEM = os.path.join(root_dir, filename)
 min_ord = 4; # This is the value <= that I want to define small streams as.
 
@@ -70,12 +70,13 @@ arcpy.MakeFeatureLayer_management(input_catchments, bas, "", "", "FID FID VISIBL
 #Look at what field names are in the shape file table.
 fields = [f.name for f in arcpy.ListFields(bas)]#Just tells me what field names the data has.
 print fields
-cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3], fields[4]])
+#cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3], fields[4]])
+cursor = arcpy.da.SearchCursor(bas, [fields[0]])
 
 ################################################################################
 #Clip DEM according to specific sub-catchment specified.
 for row in cursor:
-    if row[4] == target_basin:
+    if row[0] == target_basin:
         FID_val = row[0]
         arcpy.SelectLayerByAttribute_management(bas, "NEW_SELECTION", "\"FID\" = " + str(FID_val))
         arcpy.FeatureClassToFeatureClass_conversion (bas, out_folder, "area" + str(FID_val))#. Use this to save all of the shapefiles.
@@ -83,11 +84,15 @@ for row in cursor:
         print area_shape
         left, bottom, right, top, width, height = extents(area_shape)
         print (left, bottom, right, top, width, height)
-        new = os.path.join(out_folder, filename[0:3] + target_basin[4:])
-        print new
+        clipped_ord = os.path.join(out_folder, filename[0:3] + '_' + str(target_basin) + '_ord')
+        print clipped_ord
         extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
-        arcpy.Clip_management(DEM, extent, new, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
-        in_raster = os.path.join(root_dir, new) # This should be a clipped shape from the large stream order raster.
+        if arcpy.Exists(clipped_ord):
+            print 'This file - ' + str(clipped_ord) + ' already exists'
+        else:
+            arcpy.Clip_management(DEM, extent, clipped_ord, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
+            print clipped_ord
+
         ################################################################################
 #Syntax for extracting extent of raster.
 
@@ -102,6 +107,7 @@ for row in cursor:
         #This part is required because the function below needs the raster to have
         #an attribute table and can only build and attribute table on single band
         #8-bit file.
+        in_raster = os.path.join(root_dir, clipped_ord) # This should be a clipped shape from the large stream order raster.
         Pixel_Type = "8_BIT_SIGNED"
         conv = os.path.join(root_dir, filename + 'u' + '.tif')
         arcpy.CopyRaster_management(in_raster, conv, "", "", "-9.990000e+002", "NONE", "NONE", Pixel_Type, "NONE", "NONE", "", "NONE")
@@ -115,6 +121,7 @@ for row in cursor:
         ################################################################################
         #Find the highest stream order in the raster.
         min_order = arcpy.GetRasterProperties_management(in_raster, "MINIMUM")
+        print min_order
         smallest_stream = int(min_order.getOutput(0))#This gets change to int so that it
         #can be used as an input into value range below.
         print "Lowest stream order present: " + str(smallest_stream)
@@ -140,11 +147,11 @@ for row in cursor:
         stream_order_list = []
         for item in min_ord_streams:
             order_value = item; #This is the stream order > that we want to call river.
-            output = in_raster + str(item) + '_riv'; #Name of output file to be created.
+            output = in_raster + str(item); #Name of output file to be created.
             arcpy.gp.Con_sa(in_raster, "1", output, "", "\"VALUE\" =" + str(item))
             diss_shp = in_raster + str(item) + "_ds"#Output for dissolve operator below.
             init_shp = os.path.join(out_folder, 'init' + str(item) + ".shp")  # This will just be a temporary file.
-            expand_raster = os.path.join(root_dir, 'exp' + filename + str(item))#Output for expand operator below.
+            expand_raster = os.path.join(root_dir, 'x' + filename + str(item))#Output for expand operator below.
             print 'Going into expand loop...';
             ################################################################################
             for i in range(0, item):
@@ -205,14 +212,13 @@ for row in cursor:
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for file in filenames:
-        if file.startswith('exp'):
+        if file.startswith('x'):
             print "This file will be deleted " + str(file)
             #arcpy.Delete_management(file)
 
-root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for dir in dirnames:
-        if dir[:3] == 'exp':
+        if dir[:1] == 'x':
             print dir
             print "This directory will be deleted " + str(dir)
             arcpy.Delete_management(dir)
