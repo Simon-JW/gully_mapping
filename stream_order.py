@@ -36,7 +36,6 @@ import shutil
 #Section 1: Set the working directory.
 drive = 'C'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
-out_folder = drive + ":\PhD\junk"
 stream_order_files = 'stream_order_files';
 
 # Local variables:
@@ -143,10 +142,9 @@ for row in cursor:
 
 #------------------------------------------------------------------------------#
 #Clean up unwanted data.
-time.sleep(5)
+time.sleep(1)
+os.chdir(out_folder)
 if delete_ancillary_files == 'yes':
-
-
     for (dirpath, dirnames, filenames) in os.walk('.'):
         for dir in dirnames:
             print dir
@@ -154,7 +152,6 @@ if delete_ancillary_files == 'yes':
            #arcpy.Delete_management(dir)
             #os.rmdir(dir)
             shutil.rmtree(dir)
-
 else:
     print 'Keeping all files.'
 
