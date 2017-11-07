@@ -42,7 +42,7 @@ stream_order_files = 'stream_order_files';
 dem_file = "mary_5m"
 catchments_shape = 'Mary_subcatchments_mgaz56.shp'
 target_basin = 65 #This is the FID value of the subcatchment of interest.
-flow_acc_value = 100
+flow_acc_value = 400
 delete_ancillary_files = "no" # Either yes or no.
 
 ################################################################################
@@ -120,7 +120,7 @@ for row in cursor:
         arcpy.gp.FlowDirection_sa(fill_dem, flow_dir, "NORMAL", ""); print 'flow direction works'
         arcpy.gp.FlowAccumulation_sa(flow_dir, flow_acc, "", "FLOAT"); print 'flow accumulation works'
         flow_acc_rast = arcpy.Raster(flow_acc); print 'flow accumulation raster saved'
-        strms  = Con(flow_acc_rast >= flow_acc_value,1,0); print 'Raster calculator for streams => 1000 works'
+        strms  = Con(flow_acc_rast >= flow_acc_value,1,0); print 'Raster calculator for streams => ' + str(flow_acc_value) + ' works'
         stream = strms.save(streams); print 'stream raster saved'
         arcpy.gp.StreamOrder_sa(streams, flow_dir, stream_order, "STRAHLER"); print 'stream orders work'
         stream_ord_rast = arcpy.Raster(stream_order); print 'stream order raster saved'

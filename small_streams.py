@@ -41,6 +41,7 @@ area = 'Mary_subcatchments_mgaz56.shp'
 target_basin = 65 #Needs to be FID of target area.
 filename = 'mar_65_ord' #Input stream order raster.
 min_ord = 4; # This is the value <= that I want to define small streams as.
+delete_ancillary_files = "no" # Either yes or no.
 
 ################################################################################
 # Automatically set directories and paths to input files.
@@ -88,7 +89,6 @@ for row in cursor:
         left, bottom, right, top, width, height = extents(area_shape)
         print (left, bottom, right, top, width, height)
         clipped_ord = os.path.join(out_folder, filename[0:3] + '_' + str(target_basin) + '_ord')
-        print clipped_ord
         extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
         if arcpy.Exists(clipped_ord):
             print 'This file - ' + str(clipped_ord) + ' already exists'
@@ -112,7 +112,7 @@ for row in cursor:
         #8-bit file.
         in_raster = os.path.join(root_dir, clipped_ord) # This should be a clipped shape from the large stream order raster.
         Pixel_Type = "8_BIT_SIGNED"
-        conv = os.path.join(root_dir, filename + 'u' + '.tif')
+        conv = os.path.join(out_folder, filename + 'u' + '.tif')
         arcpy.CopyRaster_management(in_raster, conv, "", "", "-9.990000e+002", "NONE", "NONE", Pixel_Type, "NONE", "NONE", "", "NONE")
         LessThan = os.path.join(out_folder, 'LessThan')
         SetNull = os.path.join(out_folder, 'SetNull')
@@ -154,7 +154,7 @@ for row in cursor:
             arcpy.gp.Con_sa(in_raster, "1", output, "", "\"VALUE\" =" + str(item))
             diss_shp = in_raster + str(item) + "_ds"#Output for dissolve operator below.
             init_shp = os.path.join(out_folder, 'init' + str(item) + ".shp")  # This will just be a temporary file.
-            expand_raster = os.path.join(root_dir, 'x' + filename + str(item))#Output for expand operator below.
+            expand_raster = os.path.join(out_folder, 'x' + filename + str(item))#Output for expand operator below.
             print 'Going into expand loop...';
             ################################################################################
             for i in range(0, item):
@@ -163,12 +163,12 @@ for row in cursor:
                 if i == 0: #For the first loop iteration, the file to be expanded will just be the input stream order file (or one stream order from that file).
                     input_expand = output #This is the file created by the Con statement above.
                     print input_expand + ' - for value: ' + str(i);
-                    output_expand = os.path.join(root_dir, expand_raster + str(i))#Name the expanded raster to be created.
+                    output_expand = os.path.join(out_folder, expand_raster + str(i))#Name the expanded raster to be created.
                     arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")#Create the expanded raster.
                 elif i > 0:
-                    input_expand = os.path.join(root_dir, expand_raster + str(i - 1))
+                    input_expand = os.path.join(out_folder, expand_raster + str(i - 1))
                     print input_expand + ' - for value: ' + str(i)
-                    output_expand = os.path.join(root_dir, expand_raster + str(i))
+                    output_expand = os.path.join(out_folder, expand_raster + str(i))
                     print output_expand + ' - for value: ' + str(i)
                     arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")
 
@@ -189,7 +189,7 @@ for row in cursor:
 
         print str(number_of_items) + ' different stream classes.'
 
-        merged_streams = os.path.join(root_dir, filename[0:3] + 'm') #Output for merge operator below.
+        merged_streams = os.path.join(out_folder, filename[0:3] + 'm') #Output for merge operator below.
         print merged_streams
 
         #Select the correct arrangement based on number of streams <= desired stream order.
@@ -212,25 +212,26 @@ for row in cursor:
 
 ################################################################################
 #Clean up unwanted data.
-root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
-for (dirpath, dirnames, filenames) in os.walk('.'):
-    for file in filenames:
-        if file.startswith('x'):
-            print "This file will be deleted " + str(file)
-            #arcpy.Delete_management(file)
+time.sleep(1)
+os.chdir(out_folder)
+if delete_ancillary_files == 'yes':
+    os.chdir(out_folder)
+    for (dirpath, dirnames, filenames) in os.walk('.'):
+        for file in filenames:
+            print 'this file will be deleted ' + '' + file
+            arcpy.Delete_management(file)
 
-for (dirpath, dirnames, filenames) in os.walk('.'):
-    for dir in dirnames:
-        if dir[:1] == 'x':
+    for (dirpath, dirnames, filenames) in os.walk('.'):
+        for dir in dirnames:
             print dir
             print "This directory will be deleted " + str(dir)
-            arcpy.Delete_management(dir)
+            shutil.rmtree(dir)
+else:
+    print 'Keeping all files.'
+    exit()#This just stops the script running if not deleting ancillary data.
 
-arcpy.Delete_management(LessThan)
-arcpy.Delete_management(Times)
-arcpy.Delete_management(SetNull)
-arcpy.Delete_management(in_diss)
-arcpy.Delete_management(conv)
+os.chdir(root_dir)
+print 'Deleting this folder' + ' - ' + out_folder; os.rmdir(out_folder)
 
 ################################################################################
 #Time taken.

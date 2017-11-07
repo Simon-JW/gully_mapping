@@ -29,7 +29,7 @@ large_streams_files = 'large_streams_files'
 area = 'Mary_subcatchments_mgaz56.shp'
 target_basin = 65 #Needs to be FID of target shape.
 ord_file = 'mar_65_ord'
-delete_ancillary_files = "yes" # Either yes or no.
+delete_ancillary_files = "no" # Either yes or no.
 
 ################################################################################
 # Automatically set up input files and directories.
