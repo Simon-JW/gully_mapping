@@ -23,20 +23,24 @@ import arcpy
 import os
 import time
 t0 = time.time()
+
 ################################################################################
 #Set directories.
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
-out_folder = drive + ":\PhD\junk"
+subcatchment_files = 'subcatchment_files';
 
 #Set sub-catchments file and corresponding DEM.
 dem_file = 'mary_5m'
 catchments_shape = 'Mary_subcatchments_mgaz56.shp'
 landsat ='LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01'
 target_basin = 65 #This is the FID value of the subcatchment of interest.
+delete_ancillary_files = "no" # Either yes or no.
 
 ################################################################################
 #Automatically sets paths to files.
+out_folder = os.path.join(root_dir, subcatchment_files)
+os.mkdir(out_folder)
 DEM = os.path.join(root_dir, dem_file)
 landsat_files = os.path.join(root_dir, landsat)
 input_catchments = os.path.join(root_dir, catchments_shape)
@@ -78,7 +82,7 @@ for row in cursor:
         print area_shape
         left, bottom, right, top, width, height = extents(area_shape)
         print (left, bottom, right, top, width, height)
-        clipped_dem = os.path.join(out_folder, dem_file[:3] + '_' + str(target_basin) + '_DEM')
+        clipped_dem = os.path.join(root_dir, dem_file[:3] + '_' + str(target_basin) + '_DEM')
         extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
         arcpy.Clip_management(DEM, extent, clipped_dem, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
         print clipped_dem
@@ -104,7 +108,7 @@ rgb_inputs = os.path.join(out_folder,
         dem_file[:3] + str(target_basin) + '_' + band_3 + '.tif')
 
 rgb_out = dem_file[:3] + '_' + str(target_basin) + '_' + str(band_1[-1:]) + str(band_2[-1:]) + str(band_3[-1:]) + '.tif'
-rgb_file = os.path.join(out_folder, rgb_out)
+rgb_file = os.path.join(root_dir, rgb_out)
 #landsat_files = r"C:\PhD\junk\LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01"
 os.chdir(landsat_files)
 
@@ -130,17 +134,25 @@ arcpy.CompositeBands_management(rgb_inputs, rgb_file)
 
 #------------------------------------------------------------------------------#
 #Clean up unwanted files.
-root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
+time.sleep(1)
 #Delete clipped Landsat bands used to create 456 image.
-for (dirpath, dirnames, filenames) in os.walk('.'):
-    for file in filenames:
-        if file.startswith(dem_file[:3] + str(target_basin) + '_B'):
-            print 'this file will be deleted ' + '' + file
-            #arcpy.Delete_management(file)
+if delete_ancillary_files == 'yes':
+    os.chdir(out_folder)
+    for (dirpath, dirnames, filenames) in os.walk('.'):
+        for file in filenames:
+            if file.startswith(dem_file[:3] + str(target_basin) + '_B'):
+                print 'this file will be deleted ' + '' + file
+                arcpy.Delete_management(file)
+                arcpy.Delete_management(area_shape)
+else:
+    print 'Keeping all files.'
+    exit()#This just stops the script running if not deleting ancillary data.
+
+os.chdir(root_dir)
+print 'Deleting this folder' + ' - ' + out_folder; os.rmdir(out_folder)
 
 #Delete larger DEM used for clipping sub-catchment.
 #arcpy.Delete_management(DEM)
-arcpy.Delete_management(area_shape)
 
 #------------------------------------------------------------------------------#
 print ""
