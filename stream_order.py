@@ -34,16 +34,16 @@ import shutil
 
 ################################################################################
 #Section 1: Set the working directory.
-drive = 'C'
+drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 stream_order_files = 'stream_order_files';
 
 # Local variables:
-dem_file = "wean1m"
-catchments_shape = 'weany_ck.shp'
-target_basin = 0 #This is the FID value of the subcatchment of interest.
-flow_acc_value = 1000
-delete_ancillary_files = "yes" # Either yes or no.
+dem_file = "mary_5m"
+catchments_shape = 'Mary_subcatchments_mgaz56.shp'
+target_basin = 65 #This is the FID value of the subcatchment of interest.
+flow_acc_value = 100
+delete_ancillary_files = "no" # Either yes or no.
 
 ################################################################################
 #Section 2: Automatically sets paths to files.
@@ -74,7 +74,7 @@ def extents(fc):
 arcpy.MakeFeatureLayer_management(input_catchments, bas, "", "", "FID FID VISIBLE NONE;Shape Shape VISIBLE NONE;Id Id VISIBLE NONE;gridcode gridcode VISIBLE NONE")
 #This is required because SelectByFeature and SelectByAttribute do not work on shape files using arcpy. Hence they need to first be convereted to feature layers.
 fields = [f.name for f in arcpy.ListFields(bas)]#Just tells me what field names the data has.
-print 'Number of fileds in shapefile' + ' - ' + str(len(fields)); print 'List of fileds ' + str(fields)
+print 'Number of fields in shapefile' + ' == ' + str(len(fields)); print 'List of fileds ' + str(fields)
 #cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3], fields[4]])
 cursor = arcpy.da.SearchCursor(bas, [fields[0]])
 
@@ -149,10 +149,8 @@ if delete_ancillary_files == 'yes':
         for dir in dirnames:
             print dir
             print "This directory will be deleted " + str(dir)
-           #arcpy.Delete_management(dir)
-            #os.rmdir(dir)
             shutil.rmtree(dir)
-            os.rmdir(out_folder)
+
 else:
     print 'Keeping all files.'
 
