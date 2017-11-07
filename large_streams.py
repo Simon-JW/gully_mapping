@@ -24,7 +24,7 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 #Set working directories.
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
-large_streams = 'large_streams'
+large_streams_files = 'large_streams_files'
 #Set sub-catchments file and corresponding DEM.
 area = 'Mary_subcatchments_mgaz56.shp'
 target_basin = 65 #Needs to be FID of target shape.
@@ -33,7 +33,7 @@ delete_ancillary_files = "yes" # Either yes or no.
 
 ################################################################################
 # Automatically set up input files and directories.
-out_folder = os.path.join(root_dir, large_streams)
+out_folder = os.path.join(root_dir, large_streams_files)
 os.mkdir(out_folder)
 DEM = os.path.join(root_dir, ord_file)
 input_catchments = os.path.join(root_dir, area)
