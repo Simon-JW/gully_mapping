@@ -17,23 +17,29 @@ from arcpy.sa import Con
 from arcpy.sa import *
 import time; t0 = time.time()
 import sys
+import shutil
 arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directories.
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
-out_folder = drive + ":\PhD\junk"
-################################################################################
+large_streams = 'large_streams'
 #Set sub-catchments file and corresponding DEM.
 area = 'Mary_subcatchments_mgaz56.shp'
-input_catchments = os.path.join(root_dir, area)
-target_basin = "SC #463" #Needs to be full basin code e.g. 'SC #420' as a string.
-bas = "bas" #Short for basin.
-dem_file = 'qldord'
-DEM = os.path.join(root_dir, dem_file)
+target_basin = 65 #Needs to be FID of target shape.
+ord_file = 'mar_65_ord'
+delete_ancillary_files = "yes" # Either yes or no.
 
 ################################################################################
+# Automatically set up input files and directories.
+out_folder = os.path.join(root_dir, large_streams)
+os.mkdir(out_folder)
+DEM = os.path.join(root_dir, ord_file)
+input_catchments = os.path.join(root_dir, area)
+bas = "bas" #Short for basin.
+
+#------------------------------------------------------------------------------#
 #Function for extracting extents of shapes for defining clipping geometry.
 def extents(fc):
     extent = arcpy.Describe(fc).extent
@@ -49,19 +55,20 @@ def extents(fc):
 #w1, s1, e1, n1, wid1, hgt1 = extents(shape1)
 #w2, s2, e2, n2, wid2, hgt2 = extents(shape2)
 
-################################################################################
+#------------------------------------------------------------------------------#
 # Process: Make Feature Layer
 arcpy.MakeFeatureLayer_management(input_catchments, bas, "", "", "FID FID VISIBLE NONE;Shape Shape VISIBLE NONE;Id Id VISIBLE NONE;gridcode gridcode VISIBLE NONE")
 #This is required because SelectByFeature and SelectByAttribute do not work on shape files using arcpy. Hence they need to first be convereted to feature layers.
 #Look at what field names are in the shape file table.
 fields = [f.name for f in arcpy.ListFields(bas)]#Just tells me what field names the data has.
 print fields
-cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3], fields[4]])
+#cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3], fields[4]])
+cursor = arcpy.da.SearchCursor(bas, [fields[0]])
 
-################################################################################
+#------------------------------------------------------------------------------#
 #Clip DEM according to specific sub-catchment specified.
 for row in cursor:
-    if row[4] == target_basin:
+    if row[0] == target_basin:
         FID_val = row[0]
         arcpy.SelectLayerByAttribute_management(bas, "NEW_SELECTION", "\"FID\" = " + str(FID_val))
         arcpy.FeatureClassToFeatureClass_conversion (bas, out_folder, "area" + str(FID_val))#. Use this to save all of the shape files.
@@ -69,14 +76,13 @@ for row in cursor:
         print area_shape
         left, bottom, right, top, width, height = extents(area_shape)
         print (left, bottom, right, top, width, height)
-        new = os.path.join(out_folder, dem_file[0:3] + target_basin[4:])
-        print new
+        clipped_ord = os.path.join(out_folder, ord_file[0:3] + str(target_basin))
+        print clipped_ord
         extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
-        arcpy.Clip_management(DEM, extent, new, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
-        print new
-        in_raster = os.path.join(root_dir, new) # This should be a clipped shape from the large stream order raster.
+        arcpy.Clip_management(DEM, extent, clipped_ord, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
+        print clipped_ord
 
-        ################################################################################
+        #----------------------------------------------------------------------#
 #Syntax for extracting extent of raster.
 
         #dem_raster = arcpy.sa.Raster(DEM)
@@ -86,15 +92,16 @@ for row in cursor:
         #top = int(dem_raster.extent.YMax)
         #bottom = int(dem_raster.extent.YMin)
 
-        ################################################################################
+        #----------------------------------------------------------------------#
         #This part is required because the function below needs the raster to have
         #an attribute table and can only build and attribute table on single band
         #8-bit file.
+        in_raster = os.path.join(root_dir, clipped_ord) # This should be a clipped shape from the large stream order raster.
         Pixel_Type = "8_BIT_SIGNED"
         conv = in_raster + 'u' + '.tif'
         arcpy.CopyRaster_management(in_raster, conv, "", "", "-9.990000e+002", "NONE", "NONE", Pixel_Type, "NONE", "NONE", "", "NONE")
         arcpy.BuildRasterAttributeTable_management(conv, "Overwrite")
-        ################################################################################
+        #----------------------------------------------------------------------#
         #Find the highest stream order in the raster.
         max_order = arcpy.GetRasterProperties_management(in_raster, "MAXIMUM")
         largest_stream = int(max_order.getOutput(0))#This gets change to int so that it
@@ -102,8 +109,9 @@ for row in cursor:
         print "Highest stream order present: " + str(largest_stream)
         if largest_stream <= 4:
             print 'No streams large enough.'
+            exit()#This just stops the script running if there's no suitable streams.
 
-        ################################################################################
+        #----------------------------------------------------------------------#
         #Find all unique stream order values and create a new list containing only
         #those values > 4.
         def unique_values(table, field):
@@ -117,7 +125,7 @@ for row in cursor:
             if stream > 4:
                 max_ord_streams.append(stream)
 
-        ################################################################################
+        #----------------------------------------------------------------------#
         # Filtering streams.
         stream_order_list = []
         for item in max_ord_streams:
@@ -137,45 +145,60 @@ for row in cursor:
             arcpy.Delete_management(expand_raster)
             arcpy.Delete_management(init_shp)
 
-        ################################################################################
+        #----------------------------------------------------------------------#
         #Figure out whether there are streams > order 4 for the target area. If so how many
         #different orders exist > 4.
         for item in stream_order_list:
             print item
             number_of_items = len(stream_order_list)
         print str(number_of_items) + ' different stream classes.'
-        merged_streams = os.path.join(root_dir, dem_file[0:3] + 'm') #Output for merge operator below.
+        merged_streams = os.path.join(out_folder, ord_file[0:3] + 'm') #Output for merge operator below.
         print merged_streams
         #Can use the oder value to only merge correct streams i.e. 5 & 8 or 6 & 8 etc.
         #Select the correct arrangement based on number of streams > order 4
         if number_of_items == 1:
-            print "Only one stream > order 4"
+            print "Only one order > order 4 present"
             arcpy.Merge_management([str(stream_order_list[0]) + '.shp'], merged_streams)
         elif number_of_items == 2:
-            print "Two streams > order 4"
+            print "Two orders > order 4 present"
             arcpy.Merge_management([str(stream_order_list[0]) + '.shp', str(stream_order_list[1]) + '.shp'], merged_streams)
         elif number_of_items == 3:
-            print "Three streams > order 4"
+            print "Three orders > order 4 present"
             arcpy.Merge_management([str(stream_order_list[0]) + '.shp', str(stream_order_list[1]) + '.shp', str(stream_order_list[2]) + '.shp'], merged_streams)
         elif number_of_items == 4:
-            print "Four streams > order 4"
+            print "Four orders > order 4 present"
             arcpy.Merge_management([str(stream_order_list[0]) + '.shp', str(stream_order_list[1]) + '.shp', str(stream_order_list[2]) + '.shp', str(stream_order_list[3]) + '.shp'], merged_streams)
         elif number_of_items == 5:
-            print "Four streams > order 4"
+            print "Four orders > order 4 present"
             arcpy.Merge_management([str(stream_order_list[0]) + '.shp', str(stream_order_list[1]) + '.shp', str(stream_order_list[2]) + '.shp', str(stream_order_list[3]) + '.shp', str(stream_order_list[4]) + '.shp'], merged_streams)
 
         diss_merge = merged_streams + 'ds' + ".shp"  # This will just be a temporary file.
         in_diss = merged_streams + '.shp'
         arcpy.Dissolve_management(in_diss, diss_merge, "", "", "MULTI_PART", "DISSOLVE_LINES")
 
-################################################################################
+#------------------------------------------------------------------------------#
 #Clean up unwanted data.
-#os.chdir(root_dir)
-#for (dirpath, dirnames, filenames) in os.walk('.'):
-#    for file in filenames:
-#        if file[-7:-4] == '_ds':
-#            print "This file will be deleted " + str(file)
-#            arcpy.Delete_management(file)
+time.sleep(1)
+os.chdir(out_folder)
+if delete_ancillary_files == 'yes':
+    os.chdir(out_folder)
+    for (dirpath, dirnames, filenames) in os.walk('.'):
+        for file in filenames:
+            print 'this file will be deleted ' + '' + file
+            arcpy.Delete_management(file)
+
+    for (dirpath, dirnames, filenames) in os.walk('.'):
+        for dir in dirnames:
+            print dir
+            print "This directory will be deleted " + str(dir)
+            shutil.rmtree(dir)
+else:
+    print 'Keeping all files.'
+    exit()#This just stops the script running if not deleting ancillary data.
+
+os.chdir(root_dir)
+print 'Deleting this folder' + ' - ' + out_folder; os.rmdir(out_folder)
+
 
 ################################################################################
 #Time taken.
