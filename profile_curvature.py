@@ -20,20 +20,25 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 #Set working directory.
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
-out_folder = drive + ":\PhD\junk"
-filename = 'mar_29_dem'
+curvature_files = 'curvature_files'
+filename = 'mar_65_dem'
 
 #Adjustable parameters.
-
 Z_factor = "1"
-range_len = 2 #This is the numer of times you want the loop to iterate through
-                #different window sizes. Because Python indexes from 0, the
-                #number of files you create will always be 1 less than this value.
-minprocurve = -1
-maxprocurve = 1
-################################################################################
+range_len = 4 #This is the numer of times you want the loop to iterate through
+                #different minumum and maximum value thresholds. Because Python
+                #indexes from 0, the number of files you create will always be
+                #1 less than this value.
+minprocurve = -2
+maxprocurve = 2
 
+delete_ancillary_files = 'no' # Either yes or no.
+
+################################################################################
+# Automatically set directory paths and input file paths.
 DEM = os.path.join(root_dir,  filename) #Input DEM.
+out_folder = os.path.join(root_dir, curvature_files)
+os.mkdir(out_folder)
 
 #------------------------------------------------------------------------------#
 #Main program.
@@ -43,16 +48,16 @@ for i in range(1,range_len):
     max = str(i * maxprocurve)#Maximum.
     base = 'curvature' + str(i)
     curve = os.path.join(root_dir, base) #Input DEM.
-    pro_curve = os.path.join(root_dir, 'pro' + filename[:3] + str(i))#Output profile curvature raster.
-    pprocurve = os.path.join(root_dir, 'p' + 'pro' + filename[:3] + str(i))#p==positive and corresponds to max, above.
-    mpprocurve = os.path.join(root_dir, 'm' + 'p' + 'pro' + filename[:3] + str(i))
-    nprocurve = os.path.join(root_dir, 'n' + 'pro' + filename[:3] + str(i))#n==negative and corresponds to min, above.
-    mnprocurve = os.path.join(root_dir, 'm' + 'n' + 'pro' + filename[:3] + str(i))
-    p_plus_n = os.path.join(root_dir, 'n' + 'p' + 'pro' + filename[:3] + str(i))#Combining max and min filtered rasters.
-    filtprocurve = os.path.join(root_dir, 'f' + 'pro' + filename[:3] + str(i))
-    inverse = os.path.join(root_dir, 'inv' + 'pro' + filename[:3] + str(i))
-    #nullprocurve = os.path.join(root_dir, 'null' + 'pro' + filename)
-    pfiltprocurve = os.path.join(root_dir, 'p' + 'f' + 'pro' + filename[:3] + str(i))
+    pro_curve = os.path.join(out_folder, 'pro' + filename[:3] + str(i))#Output profile curvature raster.
+    pprocurve = os.path.join(out_folder, 'p' + 'pro' + filename[:3] + str(i))#p==positive and corresponds to max, above.
+    mpprocurve = os.path.join(out_folder, 'm' + 'p' + 'pro' + filename[:3] + str(i))
+    nprocurve = os.path.join(out_folder, 'n' + 'pro' + filename[:3] + str(i))#n==negative and corresponds to min, above.
+    mnprocurve = os.path.join(out_folder, 'm' + 'n' + 'pro' + filename[:3] + str(i))
+    p_plus_n = os.path.join(out_folder, 'n' + 'p' + 'pro' + filename[:3] + str(i))#Combining max and min filtered rasters.
+    filtprocurve = os.path.join(out_folder, 'f' + 'pro' + filename[:3] + str(i))
+    inverse = os.path.join(out_folder, 'inv' + 'pro' + filename[:3] + str(i))
+    #nullprocurve = os.path.join(out_folder, 'null' + 'pro' + filename)
+    pfiltprocurve = os.path.join(out_folder, 'p' + 'f' + 'pro' + filename[:3] + str(i))
     scaled_procurve = os.path.join(root_dir, filename[:6] + '_'+ 'sc' + 'pro' + str(i))
     arcpy.gp.Curvature_sa(DEM, curve, Z_factor, pro_curve); time.sleep(2)
     arcpy.gp.GreaterThanEqual_sa(pro_curve, max, pprocurve); time.sleep(2)
@@ -65,8 +70,8 @@ for i in range(1,range_len):
     arcpy.gp.Times_sa(inverse, pro_curve, filtprocurve);time.sleep(2)
     arcpy.gp.Plus_sa(mpprocurve, filtprocurve, pfiltprocurve);time.sleep(2)
     arcpy.gp.Plus_sa(mnprocurve, pfiltprocurve, scaled_procurve);time.sleep(2)
-    print 'Sleeping for 5 seconds...'
-    time.sleep(5)
+    print 'Sleeping for 1 second...'
+    time.sleep(1)
     arcpy.Delete_management(pro_curve, "")
     arcpy.Delete_management(pprocurve, "")
     arcpy.Delete_management(nprocurve, "")
@@ -78,6 +83,28 @@ for i in range(1,range_len):
     arcpy.Delete_management(filtprocurve, "")
     arcpy.Delete_management(pfiltprocurve, "")
 
+#------------------------------------------------------------------------------#
+#Clean up unwanted data.
+time.sleep(1)
+os.chdir(out_folder)
+if delete_ancillary_files == 'yes':
+    os.chdir(out_folder)
+    for (dirpath, dirnames, filenames) in os.walk('.'):
+        for file in filenames:
+            print 'this file will be deleted ' + '' + file
+            arcpy.Delete_management(file)
+
+    for (dirpath, dirnames, filenames) in os.walk('.'):
+        for dir in dirnames:
+            print dir
+            print "This directory will be deleted " + str(dir)
+            arcpy.Delete_management(dir)
+else:
+    print 'Keeping all files.'
+    exit()#This just stops the script running if not deleting ancillary data.
+
+os.chdir(root_dir)
+print 'Deleting this folder' + ' - ' + out_folder; os.rmdir(out_folder)
 #------------------------------------------------------------------------------#
 print ""
 print "Time taken:"

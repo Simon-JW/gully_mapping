@@ -20,7 +20,6 @@
 # 3. One shapefile for each stream order <= target stream order.
 # 4. One shapefile combining all separate stream order shapefiles.
 
-################################################################################
 # Import arcpy module
 import arcpy
 import os
@@ -67,7 +66,7 @@ def extents(fc):
 #w1, s1, e1, n1, wid1, hgt1 = extents(shape1)
 #w2, s2, e2, n2, wid2, hgt2 = extents(shape2)
 
-################################################################################
+#------------------------------------------------------------------------------#
 # Process: Make Feature Layer
 arcpy.MakeFeatureLayer_management(input_catchments, bas, "", "", "FID FID VISIBLE NONE;Shape Shape VISIBLE NONE;Id Id VISIBLE NONE;gridcode gridcode VISIBLE NONE")
 #This is required because SelectByFeature and SelectByAttribute do not work on shape files using arcpy. Hence they need to first be convereted to feature layers.
@@ -77,7 +76,7 @@ print fields
 #cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3], fields[4]])
 cursor = arcpy.da.SearchCursor(bas, [fields[0]])
 
-################################################################################
+#------------------------------------------------------------------------------#
 #Clip DEM according to specific sub-catchment specified.
 for row in cursor:
     if row[0] == target_basin:
@@ -96,7 +95,7 @@ for row in cursor:
             arcpy.Clip_management(DEM, extent, clipped_ord, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
             print clipped_ord
 
-        ################################################################################
+        #----------------------------------------------------------------------#
 #Syntax for extracting extent of raster.
 
         #dem_raster = arcpy.sa.Raster(DEM)
@@ -106,7 +105,7 @@ for row in cursor:
         #top = int(dem_raster.extent.YMax)
         #bottom = int(dem_raster.extent.YMin)
 
-        ################################################################################
+        #----------------------------------------------------------------------#
         #This part is required because the function below needs the raster to have
         #an attribute table and can only build and attribute table on single band
         #8-bit file.
@@ -121,7 +120,7 @@ for row in cursor:
         arcpy.gp.SetNull_sa(LessThan, "1", SetNull, "")
         arcpy.gp.Times_sa(conv, SetNull, Times)
         arcpy.BuildRasterAttributeTable_management(Times, "Overwrite")
-        ################################################################################
+        #----------------------------------------------------------------------#
         #Find the highest stream order in the raster.
         min_order = arcpy.GetRasterProperties_management(in_raster, "MINIMUM")
         print min_order
@@ -131,7 +130,7 @@ for row in cursor:
         if smallest_stream >= min_ord:
             print 'No streams small enough.'
 
-        ################################################################################
+        #----------------------------------------------------------------------#
         #Find all unique stream order values and create a new list containing only
         #those values <= min_ord.
         def unique_values(table, field):
@@ -145,7 +144,7 @@ for row in cursor:
             if stream <= min_ord:
                 min_ord_streams.append(stream)
 
-        ################################################################################
+        #----------------------------------------------------------------------#
         # Filtering streams.
         stream_order_list = []
         for item in min_ord_streams:
@@ -156,7 +155,7 @@ for row in cursor:
             init_shp = os.path.join(out_folder, 'init' + str(item) + ".shp")  # This will just be a temporary file.
             expand_raster = os.path.join(out_folder, 'x' + filename + str(item))#Output for expand operator below.
             print 'Going into expand loop...';
-            ################################################################################
+            #------------------------------------------------------------------#
             for i in range(0, item):
                 print 'Sleeping for 1 second...'; time.sleep(1)
                 print 'expand number: ' + str(i)
@@ -172,7 +171,7 @@ for row in cursor:
                     print output_expand + ' - for value: ' + str(i)
                     arcpy.gp.Expand_sa(input_expand, output_expand,  '1', "1")
 
-            ################################################################################
+            #------------------------------------------------------------------#
             arcpy.RasterToPolygon_conversion(output_expand, init_shp, "SIMPLIFY", "VALUE")
             arcpy.Dissolve_management(init_shp, diss_shp, "", "", "MULTI_PART", "DISSOLVE_LINES")
             stream_order_list.append(diss_shp)#Creating a list to use for into into megre operator below.
@@ -180,7 +179,7 @@ for row in cursor:
             arcpy.Delete_management(expand_raster)
             arcpy.Delete_management(init_shp)
 
-        ################################################################################
+        #----------------------------------------------------------------------#
         #Figure out whether there are streams <= desired minimum order for the target area. If so how many
         #different orders exist <= min_ord.
         for item in stream_order_list:
@@ -210,7 +209,7 @@ for row in cursor:
         in_diss = merged_streams + '.shp'
         arcpy.Dissolve_management(in_diss, diss_merge, "", "", "MULTI_PART", "DISSOLVE_LINES")
 
-################################################################################
+#------------------------------------------------------------------------------#
 #Clean up unwanted data.
 time.sleep(1)
 os.chdir(out_folder)
@@ -233,7 +232,7 @@ else:
 os.chdir(root_dir)
 print 'Deleting this folder' + ' - ' + out_folder; os.rmdir(out_folder)
 
-################################################################################
+#------------------------------------------------------------------------------#
 #Time taken.
 print ""
 print "Time taken:"

@@ -30,7 +30,7 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 #Set directories.
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
-gully_edge_files = 'gully_edge_files';
+gully_edge_all_files = 'gully_edge_all_files';
 catchments_shape = 'examples.shp'
 snapRaster = "X:\\PhD\\junk\\mary_5m"
 curvature_layer = "X:\\PhD\\junk\mar_1_scpro1"
@@ -38,7 +38,7 @@ delete_ancillary_files = 'no' #Either yes or no.
 
 ################################################################################
 #Set sub-catchments file and corresponding DEM.
-out_folder = os.path.join(root_dir, gully_edge_files)
+out_folder = os.path.join(root_dir, gully_edge_all_files)
 os.mkdir(out_folder)
 input_catchments = os.path.join(root_dir, catchments_shape)
 target_basin = 0 #Needs to be full basin code e.g. 'SC #420' as a string.
@@ -68,7 +68,8 @@ arcpy.MakeFeatureLayer_management(input_catchments, bas, "", "", "FID FID VISIBL
 #Look at what field names are in the shape file table.
 fields = [f.name for f in arcpy.ListFields(bas)]#Just tells me what field names the data has.
 print fields
-cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3]])
+#cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3], fields[4]])
+cursor = arcpy.da.SearchCursor(bas, [fields[0]])
 
 #------------------------------------------------------------------------------#
 #Time taken.

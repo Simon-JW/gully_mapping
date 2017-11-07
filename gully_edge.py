@@ -40,7 +40,7 @@ delete_ancillary_files = 'no' #Either yes or no.
 out_folder = os.path.join(root_dir, gully_edge_files)
 os.mkdir(out_folder)
 input_catchments = os.path.join(root_dir, catchments_shape)
-target_basin = 0 #Needs to be full basin code e.g. 'SC #420' as a string.
+target_feature = 0 #Needs to be full basin code e.g. 'SC #420' as a string.
 bas = "bas" #Short for basin. Is the name of the feature layer created by arcpy.MakeFeatureLayer_management below.
 
 #------------------------------------------------------------------------------#
@@ -67,7 +67,8 @@ arcpy.MakeFeatureLayer_management(input_catchments, bas, "", "", "FID FID VISIBL
 #Look at what field names are in the shape file table.
 fields = [f.name for f in arcpy.ListFields(bas)]#Just tells me what field names the data has.
 print fields
-cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3]])
+#cursor = arcpy.da.SearchCursor(bas, [fields[0], fields[1], fields[2], fields[3], fields[4]])
+cursor = arcpy.da.SearchCursor(bas, [fields[0]])
 
 #------------------------------------------------------------------------------#
 #Time taken.
@@ -79,7 +80,7 @@ print "hours: %i, minutes: %i, seconds: %i" %(int((time.time()-t0)/3600), int(((
 #Clip DEM according to specific sub-catchment specified.
 for row in cursor:
     values = []
-    if row[0] == target_basin:
+    if row[0] == target_feature:
         FID_val = row[0]
         arcpy.SelectLayerByAttribute_management(bas, "NEW_SELECTION", "\"FID\" = " + str(FID_val))
         arcpy.FeatureClassToFeatureClass_conversion (bas, out_folder, "area" + str(FID_val)) #. Use this to save all of the shape files.
