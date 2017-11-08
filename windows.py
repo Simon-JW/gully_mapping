@@ -29,13 +29,13 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 out_folder = drive + ":\PhD\junk"
-filename = 'mar_29_dem' #This is the input DEM.
+filename = 'mar_84_dem' #This is the input DEM.
 
 #Set parameters.
 mean_threshold = -0.5 # Highest elevation anomaly to be preserved.
 stdev_threshold = -0.5 # Highest elevation anomaly to be preserved.
 iteration_factor = 5 #This is the value to adjust the window size for each iteration.
-range_len = 2 #This is the numer of times you want the loop to iterate through
+range_len = 4 #This is the numer of times you want the loop to iterate through
                 #different window sizes. Because Python indexes from 0, the
                 #number of files you create will always be 1 less than this value.
 
@@ -62,7 +62,7 @@ for i in range(1,range_len):
     # Process: Focal Statistics
     arcpy.gp.FocalStatistics_sa(in_rast, new_m, Neighborhood, mean, "true")
     outName_mean = os.path.join(root_dir, mean_out + 'anom')
-    time.sleep(5); print 'sleeping for 5 seconds'
+    time.sleep(1); print 'sleeping for 1 second'
     win_mean = arcpy.gp.Minus_sa(in_rast, new_m, outName_mean)
     final_mean_mask = os.path.join(root_dir, filename[:2] + 'mmask' + str(i*iteration_factor))
     mean_thold= arcpy.gp.LessThanEqual_sa(win_mean, mean_threshold, final_mean_mask)
@@ -77,22 +77,22 @@ for i in range(1,range_len):
     # Process: Focal Statistics
     arcpy.gp.FocalStatistics_sa(in_rast, new_s, Neighborhood, standard_deviation, "true")
     outName_stdev = os.path.join(root_dir, stdev_out + '_r')
-    time.sleep(5); print 'sleeping for 5 seconds'
+    time.sleep(1); print 'sleeping for 1 second'
     win_std = arcpy.gp.Divide_sa(win_mean, new_s, outName_stdev)
     final_std_mask = os.path.join(root_dir, filename[:2] + 'smask'+ str(i*iteration_factor))
-    std_thold = arcpy.gp.LessThanEqual_sa(win_mean, mean_threshold, final_std_mask)
+    std_thold = arcpy.gp.LessThanEqual_sa(win_std, stdev_threshold, final_std_mask)
     final_std = os.path.join(root_dir, filename[:2] + 'fis'+ str(i*iteration_factor))
     arcpy.gp.Times_sa(final_std_mask, outName_stdev, final_std)
 
     #--------------------------------------------------------------------------#
     #Clean up unwanted standardised anomaly files.
     arcpy.Delete_management(new_s)
-    arcpy.Delete_management(outName_stdev)
+    #arcpy.Delete_management(outName_stdev)
     #arcpy.Delete_management(final_std)
     #--------------------------------------------------------------------------#
     #Clean up unwanted anomaly files.
     arcpy.Delete_management(new_m)
-    arcpy.Delete_management(outName_mean)
+    #arcpy.Delete_management(outName_mean)
     #arcpy.Delete_management(final_mean)
 
 #------------------------------------------------------------------------------#
