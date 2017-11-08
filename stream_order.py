@@ -41,7 +41,7 @@ stream_order_files = 'stream_order_files';
 # Local variables:
 dem_file = "mary_5m"
 catchments_shape = 'Mary_subcatchments_mgaz56.shp'
-target_basin = 65 #This is the FID value of the subcatchment of interest.
+target_basin = 84 #This is the FID value of the subcatchment of interest.
 flow_acc_value = 400
 delete_ancillary_files = "no" # Either yes or no.
 

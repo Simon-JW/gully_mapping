@@ -34,8 +34,8 @@ subcatchment_files = 'subcatchment_files';
 dem_file = 'mary_5m'
 catchments_shape = 'Mary_subcatchments_mgaz56.shp'
 landsat ='LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01'
-target_basin = 65 #This is the FID value of the subcatchment of interest.
-delete_ancillary_files = "no" # Either yes or no.
+target_basin = 84 #This is the FID value of the subcatchment of interest.
+delete_ancillary_files = "yes" # Either yes or no.
 
 ################################################################################
 #Automatically sets paths to files.

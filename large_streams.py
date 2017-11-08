@@ -27,8 +27,8 @@ root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 large_streams_files = 'large_streams_files'
 #Set sub-catchments file and corresponding DEM.
 area = 'Mary_subcatchments_mgaz56.shp'
-target_basin = 65 #Needs to be FID of target shape.
-ord_file = 'mar_65_ord'
+target_basin = 84 #Needs to be FID of target shape.
+ord_file = 'mar_84_ord'
 delete_ancillary_files = "no" # Either yes or no.
 
 ################################################################################
