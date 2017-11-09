@@ -26,13 +26,13 @@ t0 = time.time()
 
 ################################################################################
 #Set directories.
-drive = 'X'
+drive = 'C'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 subcatchment_files = 'subcatchment_files';
 
 #Set sub-catchments file and corresponding DEM.
-dem_file = 'mary_5m'
-catchments_shape = 'Mary_subcatchments_mgaz56.shp'
+dem_file = 'wean1m'
+catchments_shape = 'weany_ck.shp'
 landsat ='LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01'
 target_basin = 84 #This is the FID value of the subcatchment of interest.
 delete_ancillary_files = "yes" # Either yes or no.
@@ -103,9 +103,9 @@ band_1 = 'B4'
 band_2 = 'B5'
 band_3 = 'B6'
 rgb_inputs = os.path.join(out_folder,
-        dem_file[:3] + str(target_basin) + '_' + band_1 + '.tif') +';' + os.path.join(out_folder,
-        dem_file[:3] + str(target_basin) + '_' + band_2 + '.tif') + ';' + os.path.join(out_folder,
-        dem_file[:3] + str(target_basin) + '_' + band_3 + '.tif')
+        dem_file[:3] + '_' + str(target_basin) + '_' + band_1 + '.tif') +';' + os.path.join(out_folder,
+        dem_file[:3] + '_' + str(target_basin) + '_' + band_2 + '.tif') + ';' + os.path.join(out_folder,
+        dem_file[:3] + '_' + str(target_basin) + '_' + band_3 + '.tif')
 
 rgb_out = dem_file[:3] + '_' + str(target_basin) + '_' + str(band_1[-1:]) + str(band_2[-1:]) + str(band_3[-1:]) + '.tif'
 rgb_file = os.path.join(root_dir, rgb_out)

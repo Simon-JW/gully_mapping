@@ -26,16 +26,16 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directory.
-drive = 'X'
+drive = 'C'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
-out_folder = drive + ":\PhD\junk"
-filename = 'mar_84_dem' #This is the input DEM.
+window_files = 'window_files'
+filename = 'wean1m' #This is the input DEM.
 
 #Set parameters.
 mean_threshold = -0.5 # Highest elevation anomaly to be preserved.
 stdev_threshold = -0.5 # Highest elevation anomaly to be preserved.
 iteration_factor = 5 #This is the value to adjust the window size for each iteration.
-range_len = 4 #This is the numer of times you want the loop to iterate through
+range_len = 7 #This is the numer of times you want the loop to iterate through
                 #different window sizes. Because Python indexes from 0, the
                 #number of files you create will always be 1 less than this value.
 
@@ -46,6 +46,8 @@ shape = 'Rectangle ' #Name desired shape exactly with one space before closing q
 units = 'CELL' # or 'MAP', no space after
 mean = "MEAN" #Can be any of the acceptable operations depending on data type (float or int)
 standard_deviation = "STD"
+out_folder = os.path.join(root_dir, window_files)
+os.mkdir(out_folder)
 
 #------------------------------------------------------------------------------#
 #Main program.
@@ -55,33 +57,39 @@ for i in range(1,range_len):
     #--------------------------------------------------------------------------#
     #Window mean.
     mean_out = filename[:2] + '_' + 'm' + '_'  + str(i*iteration_factor)#
-    new_m = os.path.join(root_dir,mean_out)
+    new_m = os.path.join(out_folder, mean_out)
     Neighborhood = str(shape + height + width + units)
     print ('Window specifications', Neighborhood)
-    print ('mean raster', new_m)
+    print 'mean raster ' + 'for window size ' + str(height) + ' ' +  new_m
     # Process: Focal Statistics
+    print ""
+    print "Time taken: " "hours: %i, minutes: %i, seconds: %i" %(int((time.time()-t0)/3600), int(((time.time()-t0)%3600)/60), int((time.time()-t0)%60))
     arcpy.gp.FocalStatistics_sa(in_rast, new_m, Neighborhood, mean, "true")
-    outName_mean = os.path.join(root_dir, mean_out + 'anom')
-    time.sleep(1); print 'sleeping for 1 second'
+    print ""
+    print "Time taken: " "hours: %i, minutes: %i, seconds: %i" %(int((time.time()-t0)/3600), int(((time.time()-t0)%3600)/60), int((time.time()-t0)%60))
+    outName_mean = os.path.join(out_folder, mean_out + 'anom')
+    print outName_mean
+    print 'sleeping for 5 seconds...'; time.sleep(5)
+    print 'now subrtacting ' + new_m + ' from ' + in_rast
     win_mean = arcpy.gp.Minus_sa(in_rast, new_m, outName_mean)
-    final_mean_mask = os.path.join(root_dir, filename[:2] + 'mmask' + str(i*iteration_factor))
+    final_mean_mask = os.path.join(out_folder, filename[:2] + 'mmask' + str(i*iteration_factor))
     mean_thold= arcpy.gp.LessThanEqual_sa(win_mean, mean_threshold, final_mean_mask)
-    final_mean = os.path.join(root_dir, filename[:2] + 'fim'+ str(i*iteration_factor))
+    final_mean = os.path.join(out_folder, filename[:2] + 'fim'+ str(i*iteration_factor))
     arcpy.gp.Times_sa(final_mean_mask, outName_mean, final_mean)
 
     #--------------------------------------------------------------------------#
     #Window standarised anomalies.
     stdev_out = filename[:2] + '_' + 's' + '_'  + str(i*iteration_factor)
-    new_s = os.path.join(root_dir,stdev_out)
+    new_s = os.path.join(out_folder,stdev_out)
     print ('standard deviation raster', new_s)
     # Process: Focal Statistics
     arcpy.gp.FocalStatistics_sa(in_rast, new_s, Neighborhood, standard_deviation, "true")
-    outName_stdev = os.path.join(root_dir, stdev_out + '_r')
-    time.sleep(1); print 'sleeping for 1 second'
+    outName_stdev = os.path.join(out_folder, stdev_out + '_r')
+    time.sleep(5); print 'sleeping for 5 seconds...'
     win_std = arcpy.gp.Divide_sa(win_mean, new_s, outName_stdev)
-    final_std_mask = os.path.join(root_dir, filename[:2] + 'smask'+ str(i*iteration_factor))
+    final_std_mask = os.path.join(out_folder, filename[:2] + 'smask'+ str(i*iteration_factor))
     std_thold = arcpy.gp.LessThanEqual_sa(win_std, stdev_threshold, final_std_mask)
-    final_std = os.path.join(root_dir, filename[:2] + 'fis'+ str(i*iteration_factor))
+    final_std = os.path.join(out_folder, filename[:2] + 'fis'+ str(i*iteration_factor))
     arcpy.gp.Times_sa(final_std_mask, outName_stdev, final_std)
 
     #--------------------------------------------------------------------------#
@@ -101,12 +109,12 @@ for i in range(1,range_len):
     filt_s = arcpy.Raster(final_std)
     bool_m = SetNull(filt_m == 0, 1)
     bool_s = SetNull(filt_s == 0, 1)
-    mask_mean = os.path.join(root_dir, filename[:3] + 'b_m'+ str(i))
-    mask_stdev = os.path.join(root_dir, filename[:3] + 'b_s'+ str(i))
+    mask_mean = os.path.join(out_folder, filename[:3] + 'b_m'+ str(i))
+    mask_stdev = os.path.join(out_folder, filename[:3] + 'b_s'+ str(i))
     bool_m.save(mask_mean)
     bool_s.save(mask_stdev)
-    meandiffgul = os.path.join(root_dir, filename[:3] + 'shm'+ str(i))
-    stddiffgul = os.path.join(root_dir, filename[:3] + 'shs'+ str(i))
+    meandiffgul = os.path.join(out_folder, filename[:3] + 'shm'+ str(i))
+    stddiffgul = os.path.join(out_folder, filename[:3] + 'shs'+ str(i))
     arcpy.RasterToPolygon_conversion(mask_mean, meandiffgul, "NO_SIMPLIFY", "VALUE")
     arcpy.RasterToPolygon_conversion(mask_stdev, stddiffgul, "NO_SIMPLIFY", "VALUE")
 

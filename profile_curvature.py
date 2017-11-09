@@ -18,10 +18,10 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directory.
-drive = 'X'
+drive = 'C'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 curvature_files = 'curvature_files'
-filename = 'mar_84_dem'
+filename = 'wean1m'
 
 #Adjustable parameters.
 Z_factor = "1"

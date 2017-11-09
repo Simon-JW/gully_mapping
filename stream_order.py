@@ -34,15 +34,15 @@ import shutil
 
 ################################################################################
 #Section 1: Set the working directory.
-drive = 'X'
+drive = 'C'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 stream_order_files = 'stream_order_files';
 
 # Local variables:
-dem_file = "mary_5m"
-catchments_shape = 'Mary_subcatchments_mgaz56.shp'
-target_basin = 84 #This is the FID value of the subcatchment of interest.
-flow_acc_value = 400
+dem_file = "wean1m"
+catchments_shape = 'weany_ck.shp'
+target_basin = 0 #This is the FID value of the subcatchment of interest.
+flow_acc_value = 1000
 delete_ancillary_files = "no" # Either yes or no.
 
 ################################################################################

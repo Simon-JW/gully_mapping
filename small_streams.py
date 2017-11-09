@@ -32,13 +32,13 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directories.
-drive = 'X'
+drive = 'C'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 small_streams_files = 'small_streams_files'
 #Set sub-catchments file and corresponding DEM.
-area = 'Mary_subcatchments_mgaz56.shp'
-target_basin = 84 #Needs to be FID of target area.
-filename = 'mar_84_ord' #Input stream order raster.
+area = 'weany_ck.shp'
+target_basin = 0 #Needs to be FID of target area.
+filename = 'wea_0_ord' #Input stream order raster.
 min_ord = 4; # This is the value <= that I want to define small streams as.
 delete_ancillary_files = "no" # Either yes or no.
 
