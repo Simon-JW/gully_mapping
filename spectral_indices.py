@@ -23,11 +23,13 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
+subcatchment_files = 'subcatchment_files'
 spectral_files = 'spectral_indices';
-Band_3 = 'mar65_B3.tif' # Green
-Band_5 = 'mar65_B5.tif' # NIR
-Band_6 = 'mar65_B6.tif' # SWIR 1
-Band_7 = 'mar65_B7.tif' # SWIR 2
+subcatchment = 'wea_0'
+Band_3 = subcatchment + '_B3.tif' # Green
+Band_5 = subcatchment + '_B5.tif' # NIR
+Band_6 = subcatchment + '_B6.tif' # SWIR 1
+Band_7 = subcatchment + '_B7.tif' # SWIR 2
 delete_ancillary_files = 'no' #Either yes or no.
 mndwi_threshold = 0.09 # Taken from (H. Xu, 2006)
 awei_threshold = 0.0 # Taken from (Feyisa et al., 2014)
@@ -36,10 +38,10 @@ awei_threshold = 0.0 # Taken from (Feyisa et al., 2014)
 #
 out_folder = os.path.join(root_dir, spectral_files)
 os.mkdir(out_folder)
-green = os.path.join(root_dir, Band_3)
-nir = os.path.join(root_dir, Band_5)
-swir_1 = os.path.join(root_dir, Band_6)
-swir_2 = os.path.join(root_dir, Band_7)
+green = os.path.join(root_dir, subcacthment_files, Band_3)
+nir = os.path.join(root_dir, subcacthment_files, Band_5)
+swir_1 = os.path.join(root_dir, subcacthment_files, Band_6)
+swir_2 = os.path.join(root_dir, subcacthment_files, Band_7)
 
 #------------------------------------------------------------------------------#
 # Set up spectral band files.
