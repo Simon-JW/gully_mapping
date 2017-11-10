@@ -25,11 +25,15 @@ drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 subcatchment_files = 'subcatchment_files'
 spectral_files = 'spectral_indices';
-subcatchment = 'wea_0'
-Band_3 = subcatchment + '_B3.tif' # Green
-Band_5 = subcatchment + '_B5.tif' # NIR
-Band_6 = subcatchment + '_B6.tif' # SWIR 1
-Band_7 = subcatchment + '_B7.tif' # SWIR 2
+subcatchment = 'mar_38'
+green = '_B3'
+nir = '_B5'
+swir1 = '_B6'
+swir2 = '_B7'
+Band_3 = subcatchment + green + '.tif' # Green
+Band_5 = subcatchment + nir + '.tif' # NIR
+Band_6 = subcatchment + swir1 + '.tif' # SWIR 1
+Band_7 = subcatchment + swir2 + '.tif' # SWIR 2
 delete_ancillary_files = 'no' #Either yes or no.
 mndwi_threshold = 0.09 # Taken from (H. Xu, 2006)
 awei_threshold = 0.0 # Taken from (Feyisa et al., 2014)
@@ -38,22 +42,22 @@ awei_threshold = 0.0 # Taken from (Feyisa et al., 2014)
 #
 out_folder = os.path.join(root_dir, spectral_files)
 os.mkdir(out_folder)
-green = os.path.join(root_dir, subcacthment_files, Band_3)
-nir = os.path.join(root_dir, subcacthment_files, Band_5)
-swir_1 = os.path.join(root_dir, subcacthment_files, Band_6)
-swir_2 = os.path.join(root_dir, subcacthment_files, Band_7)
+green_int = os.path.join(root_dir, subcatchment_files, Band_3)
+nir_int = os.path.join(root_dir, subcatchment_files, Band_5)
+swir_1_int = os.path.join(root_dir, subcatchment_files, Band_6)
+swir_2_int = os.path.join(root_dir, subcatchment_files, Band_7)
 
 #------------------------------------------------------------------------------#
 # Set up spectral band files.
-green_float = os.path.join(out_folder, Band_3[:8] + 'flt')
-nir_float = os.path.join(out_folder, Band_5[:8] + 'flt')
-swir_1_float = os.path.join(out_folder, Band_6[:8] + 'flt')
-swir_2_float = os.path.join(out_folder, Band_7[:8] + 'flt')
+green_float = os.path.join(out_folder, subcatchment + green + 'flt')
+nir_float = os.path.join(out_folder, subcatchment + nir + 'flt')
+swir_1_float = os.path.join(out_folder, subcatchment + swir1 + 'flt')
+swir_2_float = os.path.join(out_folder, subcatchment + swir2 + 'flt')
 
-arcpy.gp.Times_sa(green, "1.0", green_float); print str(green_float) + '-' + 'conversion to float works.'
-arcpy.gp.Times_sa(nir, "1.0", nir_float); print str(nir_float) + '-' +'conversion to float works.'
-arcpy.gp.Times_sa(swir_1, "1.0", swir_1_float); print str(swir_1_float) + '-' +'conversion to float works.'
-arcpy.gp.Times_sa(swir_2, "1.0", swir_2_float); print str(swir_2_float) + '-' +'conversion to float works.'
+arcpy.gp.Times_sa(green_int, "1.0", green_float); print str(green_float) + '-' + 'conversion to float works.'
+arcpy.gp.Times_sa(nir_int, "1.0", nir_float); print str(nir_float) + '-' +'conversion to float works.'
+arcpy.gp.Times_sa(swir_1_int, "1.0", swir_1_float); print str(swir_1_float) + '-' +'conversion to float works.'
+arcpy.gp.Times_sa(swir_2_int, "1.0", swir_2_float); print str(swir_2_float) + '-' +'conversion to float works.'
 
 green_rast = arcpy.Raster(green_float)
 nir_rast = arcpy.Raster(nir_float)

@@ -26,16 +26,16 @@ t0 = time.time()
 
 ################################################################################
 #Set directories.
-drive = 'C'
+drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 subcatchment_files = 'subcatchment_files';
 
 #Set sub-catchments file and corresponding DEM.
-dem_file = 'wean1m'
-catchments_shape = 'weany_ck.shp'
+dem_file = 'mary_5m'
+catchments_shape = 'Mary_subcatchments_mgaz56.shp'
 landsat ='LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01'
-target_basin = 84 #This is the FID value of the subcatchment of interest.
-delete_ancillary_files = "yes" # Either yes or no.
+target_basin = 38 #This is the FID value of the subcatchment of interest.
+delete_ancillary_files = "no" # Either yes or no.
 
 ################################################################################
 #Automatically sets paths to files.
@@ -117,7 +117,7 @@ os.chdir(landsat_files)
 for (dirpath, dirnames, filenames) in os.walk('.'):
     for file in filenames:
         if file.endswith('.tif'):
-            new_rgb = os.path.join(out_folder, dem_file[:3] + str(target_basin) + file[-7:])
+            new_rgb = os.path.join(out_folder, dem_file[:3] + '_' + str(target_basin) + file[-7:])
             extent = str(left) + ' ' + str(bottom) + ' ' + str(right) + ' ' + str(top)
             arcpy.Clip_management(file, extent, new_rgb, area_shape, "-999", "true", "NO_MAINTAIN_EXTENT")
             print new_rgb
@@ -140,10 +140,15 @@ if delete_ancillary_files == 'yes':
     os.chdir(out_folder)
     for (dirpath, dirnames, filenames) in os.walk('.'):
         for file in filenames:
-            if file.startswith(dem_file[:3] + str(target_basin) + '_B'):
-                print 'this file will be deleted ' + '' + file
-                arcpy.Delete_management(file)
-                arcpy.Delete_management(area_shape)
+            print 'this file will be deleted ' + '' + file
+            arcpy.Delete_management(file)
+
+    for (dirpath, dirnames, filenames) in os.walk('.'):
+        for dir in dirnames:
+            print dir
+            print "This directory will be deleted " + str(dir)
+            #shutil.rmtree(dir)
+            os.rmdir(dir)
 else:
     print 'Keeping all files.'
     exit()#This just stops the script running if not deleting ancillary data.

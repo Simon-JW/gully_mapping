@@ -18,14 +18,14 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directory.
-drive = 'C'
+drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 curvature_files = 'curvature_files'
-filename = 'wean1m'
+filename = 'mar_38_dem'
 
 #Adjustable parameters.
 Z_factor = "1"
-range_len = 4 #This is the numer of times you want the loop to iterate through
+range_len = 2 #This is the numer of times you want the loop to iterate through
                 #different minumum and maximum value thresholds. Because Python
                 #indexes from 0, the number of files you create will always be
                 #1 less than this value.
