@@ -19,10 +19,19 @@ import time; t0 = time.time()
 import sys
 arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
+drive = 'X'
+root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
+quantized_dem_files = 'quantized_dem_files';
+
+out_folder = os.path.join(root_dir, quantized_dem_files)
+os.mkdir(out_folder)
+
+reclass_dem = 'reclass'
+
 # Local variables:
 mar_38_dem = "X:\\PhD\\junk\\mar_38_dem"
 #Reclassification = "3.138347 6.982469 1;6.982469 10.986762 2;10.986762 14.350369 3;14.350369 15.952086 4;15.952086 17.393632 5;17.393632 19.475864 6;19.475864 23.480158 7;23.480158 28.765825 8;28.765825 33.731148 9;33.731148 44.142311 10"
-Reclass_out = "X:\\PhD\\junk\\Reclass.tif"
+Reclass_out = os.path.join(out_folder, reclass_dem + '.tif')
 
 min = arcpy.GetRasterProperties_management(mar_38_dem, "MINIMUM")
 #Get the elevation standard deviation value from geoprocessing result object
@@ -64,6 +73,10 @@ Reclassification = my_lst_str
 arcpy.gp.Reclassify_sa(mar_38_dem, "VALUE", Reclassification, Reclass_out, "DATA")
 
 
+quant_selection = os.path.join(out_folder, reclass_dem + 'n')
+arcpy.gp.Con_sa(Reclass_out, "0", quant_selection, "", "\"VALUE\" =" + '1')
+quant_selection_shape = os.path.join(out_folder, quant_selection + 's')
+arcpy.RasterToPolygon_conversion(quant_selection, quant_selection_shape, "NO_SIMPLIFY", "VALUE")
 
 
 
