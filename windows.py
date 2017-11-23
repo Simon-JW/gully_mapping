@@ -8,6 +8,10 @@
 # ---------------------------------------------------------------------------
 #Take ~1-2 mins per sub-catchment.
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#THIS WILL THROW A 999999 ERROR IF OTHER ARC APPLICATIONS ARE OPEN
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 #Requires:
 # 1. DEM.
 
@@ -26,15 +30,18 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 
 ################################################################################
 #Set working directory.
-drive = 'X'
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#THIS WILL THROW A 999999 ERROR IF OTHER ARC APPLICATIONS ARE OPEN
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drive = 'C'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 window_files = 'window_files'
-filename = 'mar_38_dem' #This is the input DEM.
+filename = 'wean1m' #This is the input DEM.
 
 #Set parameters.
 mean_threshold = -0.5 # Highest elevation anomaly to be preserved.
 stdev_threshold = -0.5 # Highest elevation anomaly to be preserved.
-iteration_factor = 5 #This is the value to adjust the window size for each iteration.
+iteration_factor = 25 #This is the value to adjust the window size for each iteration.
 range_len = 2 #This is the numer of times you want the loop to iterate through
                 #different window sizes. Because Python indexes from 0, the
                 #number of files you create will always be 1 less than this value.
@@ -73,6 +80,7 @@ for i in range(1,range_len):
     print 'now subrtacting ' + new_m + ' from ' + in_rast
     win_mean = arcpy.gp.Minus_sa(in_rast, new_m, outName_mean)
     final_mean_mask = os.path.join(out_folder, filename[:2] + 'mmask' + str(i*iteration_factor))
+    print 'sleeping for 5 seconds...'; time.sleep(5)
     mean_thold= arcpy.gp.LessThanEqual_sa(win_mean, mean_threshold, final_mean_mask)
     final_mean = os.path.join(out_folder, filename[:2] + 'fim'+ str(i*iteration_factor))
     arcpy.gp.Times_sa(final_mean_mask, outName_mean, final_mean)
