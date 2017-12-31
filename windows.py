@@ -33,15 +33,16 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #THIS WILL THROW A 999999 ERROR IF OTHER ARC APPLICATIONS ARE OPEN
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drive = 'C'
+drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 window_files = 'window_files'
-filename = 'wean1m' #This is the input DEM.
+filename = 'mar_57_dem' #This is the input DEM.
 
 #Set parameters.
-mean_threshold = -0.5 # Highest elevation anomaly to be preserved.
-stdev_threshold = -0.5 # Highest elevation anomaly to be preserved.
-iteration_factor = 10 #This is the value to adjust the window size for each iteration.
+#mean_threshold = 0 # Highest elevation anomaly to be preserved.
+stdev_threshold = 0 # Highest elevation anomaly to be preserved.
+iteration_factor = 3 #This is the value to adjust the window size for each iteration.
+                    #It is equal to the number of cells to multiply the neighborhood size by for each iteration..
 range_len = 5 #This is the numer of times you want the loop to iterate through
                 #different window sizes. Because Python indexes from 0, the
                 #number of files you create will always be 1 less than this value.
@@ -59,11 +60,11 @@ os.mkdir(out_folder)
 #------------------------------------------------------------------------------#
 #Main program.
 for i in range(1,range_len):
-    height = str(i * iteration_factor) + ' '
-    width = str(i * iteration_factor) + ' '
+    height = str(i + 1) + ' '
+    width = str(i + 1) + ' '
     #--------------------------------------------------------------------------#
     #Window mean.
-    mean_out = filename[:2] + '_' + 'm' + '_'  + str(i*iteration_factor)#
+    mean_out = filename[:2] + '_' + 'm' + '_'  + str((i + 1) * 5)#
     new_m = os.path.join(out_folder, mean_out)
     Neighborhood = str(shape + height + width + units)
     print ('Window specifications', Neighborhood)
@@ -78,12 +79,22 @@ for i in range(1,range_len):
     print outName_mean
     print 'sleeping for 5 seconds...'; time.sleep(5)
     print 'now subrtacting ' + new_m + ' from ' + in_rast
-    win_mean = arcpy.gp.Minus_sa(in_rast, new_m, outName_mean)
-    final_mean_mask = os.path.join(out_folder, filename[:2] + 'mmask' + str(i*iteration_factor))
-    print 'sleeping for 5 seconds...'; time.sleep(5)
-    mean_thold= arcpy.gp.LessThanEqual_sa(win_mean, mean_threshold, final_mean_mask)
-    final_mean = os.path.join(out_folder, filename[:2] + 'fim'+ str(i*iteration_factor))
-    arcpy.gp.Times_sa(final_mean_mask, outName_mean, final_mean)
+    win_mean = arcpy.gp.Minus_sa(in_rast, new_m, outName_mean)#This is DFME.
+    for d in range(1,6):
+        final_mean_mask = os.path.join(out_folder, filename[:2] + 'mmask' + str((i + 1) * 5) + str(d))#Filename for output mask based on threshold depth.
+        print 'sleeping for 5 seconds...'; time.sleep(5)
+        mean_threshold = (d/10.0) * -1
+        print mean_threshold
+        mean_thold= arcpy.gp.LessThanEqual_sa(win_mean, mean_threshold, final_mean_mask)
+        final_mean = os.path.join(out_folder, filename[:2] + 'fim'+ str((i + 1) * 5) + str(d))
+        arcpy.gp.Times_sa(final_mean_mask, outName_mean, final_mean)
+        #Other optional operations.
+        filt_m = arcpy.Raster(final_mean)
+        bool_m = SetNull(filt_m == 0, 1)
+        mask_mean = os.path.join(out_folder, filename[:3] + 'b_m'+ str((i + 1) * 5) + str(d))
+        bool_m.save(mask_mean)
+        meandiffgul = os.path.join(out_folder, filename[:3] + 'shm'+ str((i + 1) * 5) + str(d))
+        arcpy.RasterToPolygon_conversion(mask_mean, meandiffgul, "NO_SIMPLIFY", "VALUE")
 
     #--------------------------------------------------------------------------#
     #Window standarised anomalies.
@@ -113,17 +124,17 @@ for i in range(1,range_len):
 
 #------------------------------------------------------------------------------#
     #Other optional operations.
-    filt_m = arcpy.Raster(final_mean)
+    #filt_m = arcpy.Raster(final_mean)
     filt_s = arcpy.Raster(final_std)
-    bool_m = SetNull(filt_m == 0, 1)
+    #bool_m = SetNull(filt_m == 0, 1)
     bool_s = SetNull(filt_s == 0, 1)
-    mask_mean = os.path.join(out_folder, filename[:3] + 'b_m'+ str(i))
+    #mask_mean = os.path.join(out_folder, filename[:3] + 'b_m'+ str(i))
     mask_stdev = os.path.join(out_folder, filename[:3] + 'b_s'+ str(i))
-    bool_m.save(mask_mean)
+    #bool_m.save(mask_mean)
     bool_s.save(mask_stdev)
-    meandiffgul = os.path.join(out_folder, filename[:3] + 'shm'+ str(i))
+    #meandiffgul = os.path.join(out_folder, filename[:3] + 'shm'+ str(i))
     stddiffgul = os.path.join(out_folder, filename[:3] + 'shs'+ str(i))
-    arcpy.RasterToPolygon_conversion(mask_mean, meandiffgul, "NO_SIMPLIFY", "VALUE")
+    #arcpy.RasterToPolygon_conversion(mask_mean, meandiffgul, "NO_SIMPLIFY", "VALUE")
     arcpy.RasterToPolygon_conversion(mask_stdev, stddiffgul, "NO_SIMPLIFY", "VALUE")
 
 #------------------------------------------------------------------------------#
