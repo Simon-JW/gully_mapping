@@ -26,15 +26,15 @@ t0 = time.time()
 
 ################################################################################
 #Set directories.
-drive = 'C'
+drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 subcatchment_files = 'subcatchment_files';
 
 #Set sub-catchments file and corresponding DEM.
-dem_file = 'wean1m'
-catchments_shape = 'weany_ck.shp'
+dem_file = 'mary_5m'
+catchments_shape = 'Mary_subcatchments_mgaz56.shp'
 landsat ='LS8_OLI_TIRS_NBAR_P54_GANBAR01-032_090_078_20140726\scene01'
-target_basin = 0 #This is the FID value of the subcatchment of interest.
+target_basin = 57 #This is the FID value of the subcatchment of interest.
 delete_ancillary_files = "yes" # Either yes or no.
 
 ################################################################################
