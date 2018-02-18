@@ -31,9 +31,10 @@ drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 gully_edge_files = 'gully_edge_files';
 catchments_shape = 'test_gul2.shp'
-snapRaster = "X:\\PhD\\junk\\mary_5m"
-curvature_layer = "X:\\PhD\\junk\mar_7_scpro1"
+snapRaster = "X:\\PhD\\junk\\wean_1m"
+curvature_layer = "X:\\PhD\\junk\wean_1_scpro1"
 delete_ancillary_files = 'no' #Either yes or no.
+data_resolution = str(1)
 
 ################################################################################
 #Set sub-catchments file and corresponding DEM.
@@ -93,7 +94,7 @@ for row in cursor:
         tempEnvironment1 = arcpy.env.extent
         arcpy.env.extent = str(left - 25.0) + ' ' + str(bottom - 25.0) + ' ' + str(right + 25.0) + ' ' + str(top + 25.0)
         output = os.path.join(out_folder, 'r' + str(row[0]))
-        arcpy.PolygonToRaster_conversion(area_shape, "FID", output, "CELL_CENTER", "NONE", "5")
+        arcpy.PolygonToRaster_conversion(area_shape, "FID", output, "CELL_CENTER", "NONE", data_resolution)
         arcpy.env.snapRaster = tempEnvironment0
         arcpy.env.extent = tempEnvironment1
         #----------------------------------------------------------------------#
