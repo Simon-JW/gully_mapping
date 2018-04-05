@@ -55,6 +55,7 @@ os.mkdir(out_folder)
 #------------------------------------------------------------------------------#
 
 radius = str(1)
+expand_size = 3
 
 #------------------------------------------------------------------------------#
 # Setup window parameters.
@@ -70,14 +71,29 @@ print 'mean raster ' + 'for window size ' + radius + ' ' +  new_v
 arcpy.gp.FocalStatistics_sa(in_rast, new_v, neighborhood, statistic, "true")
 junctions = os.path.join(out_folder, stream_order_file[:3] +'jun')
 junctions_rast = arcpy.Raster(new_v);
-junct  = Con(junctions_rast >= 2,1,0);
+junct  = Con(junctions_rast >= 2,0,1);
 junction_file = junct.save(junctions)
 
-output_expand = os.path.join(out_folder, 'exp' + '_' + 'junct')
-arcpy.gp.Expand_sa(junct, output_expand,  '3', "1")#Create the expanded raster.
+#------------------------------------------------------------------------------#
 
-print 'stream raster saved'
-print ""
+output_expand = os.path.join(out_folder, 'exp' + '_' + 'junct')
+arcpy.gp.Expand_sa(junct, output_expand,  str(expand_size), "0")#Create the expanded raster.
+
+#------------------------------------------------------------------------------#
+
+null = os.path.join(out_folder, stream_order_file[:3] +'n')
+n_rast = arcpy.Raster(output_expand);
+n  = Con(IsNull(n_rast), 1, n_rast);
+null_file = n.save(null)
+
+#------------------------------------------------------------------------------#
+
+junctions_null = os.path.join(out_folder, stream_order_file[:3] +'jun_n')
+junct_n_rast = arcpy.Raster(null);
+junct_n  = SetNull(junct_n_rast == 0, 1);
+junction_null_file = junct_n.save(junctions_null)
+
+
 print "Time taken: " "hours: %i, minutes: %i, seconds: %i" %(int((time.time()-t0)/3600), int(((time.time()-t0)%3600)/60), int((time.time()-t0)%60))
 
 
