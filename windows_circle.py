@@ -36,32 +36,37 @@ arcpy.CheckOutExtension("Spatial")#Make sure spatial analyst is activated.
 drive = 'X'
 root_dir = drive + ":\PhD\junk"; os.chdir(root_dir)
 window_files = 'window_files'
-filename = 'mar_54_dem' #This is the input DEM.
+filename = 'my_house' #This is the input DEM.
 
 #Set parameters.
 #mean_threshold = 0 # Highest elevation anomaly to be preserved.
 stdev_threshold = 0 # Highest elevation anomaly to be preserved.
 iteration_factor = 3 #This is the value to adjust the window size for each iteration.
                     #It is equal to the number of cells to multiply the neighborhood size by for each iteration..
-range_len = 2 #This is the numer of times you want the loop to iterate through
+range_len = 3 #This is the numer of times you want the loop to iterate through
                 #different window sizes. Because Python indexes from 0, the
                 #number of files you create will always be 1 less than this value.
 
 ################################################################################
 # Local variables:
 in_rast = os.path.join(root_dir, filename) # provide a default value if unspecified
+out_folder = os.path.join(root_dir, window_files)
+os.mkdir(out_folder)
+
+
+#Window variables.
 shape = 'Circle ' #Name desired shape exactly with one space before closing quotes.
 units = 'CELL' # or 'MAP', no space after
 mean = "MEAN" #Can be any of the acceptable operations depending on data type (float or int)
 
-out_folder = os.path.join(root_dir, window_files)
-os.mkdir(out_folder)
+#Zonal statistics variables.
+statistic = "SUM"
 
 #------------------------------------------------------------------------------#
 #Main program.
 for i in range(1,range_len):
-    radius = i + 2
-    radius_string = str(i + 1) + ' ' # This just allows for the radius value to be fed to arc functions as a correctly formatted string.
+    radius = i + 7
+    radius_string = str(i + radius) + ' ' # This just allows for the radius value to be fed to arc functions as a correctly formatted string.
     #--------------------------------------------------------------------------#
     #Window mean.
     mean_out = filename[:2] + '_' + 'm' + '_'  + str(radius)#
@@ -80,7 +85,7 @@ for i in range(1,range_len):
     print 'sleeping for 5 seconds...'; time.sleep(5)
     print 'now subrtacting ' + new_m + ' from ' + in_rast
     win_mean = arcpy.gp.Minus_sa(in_rast, new_m, outName_mean)#This is DFME.
-    for d in range(3,4):
+    for d in range(1,3):
         final_mean_mask = os.path.join(out_folder, filename[:2] + 'mmask' + str(radius) + str(d))#Filename for output mask based on threshold depth.
         print 'sleeping for 5 seconds...'; time.sleep(5)
         mean_threshold = (d/10.0) * -1
@@ -95,25 +100,35 @@ for i in range(1,range_len):
         bool_m.save(mask_mean)
         meandiffgul = os.path.join(out_folder, filename[:3] + 'shm'+ str(radius) + str(d))
         arcpy.RasterToPolygon_conversion(mask_mean, meandiffgul, "NO_SIMPLIFY", "VALUE")
+        #--------------------------------------------------------------------------#
+        # Perform zonal statistics.
+        zones = meandiffgul + '.shp'
+        underlying_raster = mask_mean
+        out_stats = os.path.join(out_folder, filename[:3] + 'sz'+ str(radius) + str(d))
+        arcpy.gp.ZonalStatistics_sa(zones, "Id", underlying_raster, out_stats, statistic, "DATA")
+
+        cut_small_shapes = os.path.join(out_folder, filename[:3] +'cut' + '_' + str(i) + '_' + str(d))
+        cut_small_shapes_rast = arcpy.Raster(out_stats);
+        cut  = SetNull(cut_small_shapes_rast <= 5, 1);
+        cut_small_shapes_file = cut.save(cut_small_shapes)
+        print cut_small_shapes
+
 
     #--------------------------------------------------------------------------#
     #Clean up unwanted anomaly files.
+
     arcpy.Delete_management(new_m)
     #arcpy.Delete_management(outName_mean)
     #arcpy.Delete_management(final_mean)
 
 #------------------------------------------------------------------------------#
     #Other optional operations.
+
     #filt_m = arcpy.Raster(final_mean)
-
     #bool_m = SetNull(filt_m == 0, 1)
-
     #mask_mean = os.path.join(out_folder, filename[:3] + 'b_m'+ str(i))
-
     #bool_m.save(mask_mean)
-
     #meandiffgul = os.path.join(out_folder, filename[:3] + 'shm'+ str(i))
-
     #arcpy.RasterToPolygon_conversion(mask_mean, meandiffgul, "NO_SIMPLIFY", "VALUE")
 
 
